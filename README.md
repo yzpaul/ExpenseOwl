@@ -1,6 +1,7 @@
 # BudgetLord - Personal Expense Tracker
 
-> [!TIP] This is another repo I used to test the capabilities of LLMs. Nothing in this repo apart from this statement was written directly by me. That includes the Dockerfile and GitHub workflows.
+> [!TIP]
+> This is another repo I used to test the capabilities of LLMs. Nothing in this repo apart from this callout block was written directly by me. Everything was an output from the LLM that I directed to write things a certain way through my prompts. That includes the Dockerfile and GitHub build workflow.
 
 A lightweight, single-user expense tracking system with CLI support, dead-simple data visualization, and Docker deployment options.
 

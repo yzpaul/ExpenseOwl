@@ -23,7 +23,7 @@ jobs:
         id: version
         run: |
           # Get the latest version tag, default to v0.1 if none exists
-          LATEST_TAG=$(gh release list -L 1 | cut -f 1 | sed 's/Latest//' || echo "v0.0")
+          LATEST_TAG=$(gh release list -L 1 | cut -f 1 | sed 's/Release //' || echo "v0.0")
           LATEST_TAG=${LATEST_TAG:-v0.0}
           
           # Extract current version numbers
