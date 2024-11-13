@@ -83,6 +83,8 @@ jobs:
     needs: [create-release, build]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Publish Release
         run: |
           gh release edit ${{ needs.create-release.outputs.version }} --draft=false
