@@ -7,6 +7,7 @@ import (
 
 	"github.com/tanq16/budgetlord/internal/models"
 	"github.com/tanq16/budgetlord/internal/storage"
+	"github.com/tanq16/budgetlord/internal/web"
 )
 
 type Handler struct {
@@ -75,6 +76,18 @@ func (h *Handler) GetExpenses(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, expenses)
+}
+
+func (h *Handler) ServeTableView(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := web.ServeTemplate(w, "table.html"); err != nil {
+		http.Error(w, "Failed to serve template", http.StatusInternalServerError)
+		return
+	}
 }
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {

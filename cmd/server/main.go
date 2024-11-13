@@ -33,18 +33,25 @@ func main() {
 	// Set up API routes
 	http.HandleFunc("/expense", handler.AddExpense)
 	http.HandleFunc("/expenses", handler.GetExpenses)
+	// Replace the previous table route with this:
+	http.HandleFunc("/table", handler.ServeTableView)
+
 	// http.HandleFunc("/expenses/processed", handler.GetProcessedExpenses)
 
 	// Set up static file serving
 	// http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.GetStaticFileSystem())))
 
 	// Set up index page
+	// Update the root handler
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
 			return
 		}
-		http.FileServer(web.GetFileSystem()).ServeHTTP(w, r)
+		if err := web.ServeTemplate(w, "index.html"); err != nil {
+			http.Error(w, "Failed to serve template", http.StatusInternalServerError)
+			return
+		}
 	})
 
 	// Start server
