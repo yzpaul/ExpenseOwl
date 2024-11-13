@@ -16,22 +16,6 @@
             <div id="currentDate"></div>
         </header>
 
-        <div class="summary-stats">
-            <div class="stat-card">
-                <h3>This Month</h3>
-                <div class="value" id="thisMonthTotal">--</div>
-                <div class="trend-indicator" id="monthTrend"></div>
-            </div>
-            <div class="stat-card">
-                <h3>Avg. Monthly</h3>
-                <div class="value" id="avgMonthly">--</div>
-            </div>
-            <div class="stat-card">
-                <h3>Top Category</h3>
-                <div class="value" id="topCategory">--</div>
-            </div>
-        </div>
-
         <main>
             <div class="chart-container">
                 <div class="chart-box">
@@ -49,20 +33,15 @@
                 
                 <div class="chart-box">
                     <div class="chart-header">
-                        <h2>Category Distribution</h2>
+                        <h2>Monthly Trends</h2>
                     </div>
-                    <canvas id="categoryPieChart"></canvas>
+                    <canvas id="monthlyTrendsChart"></canvas>
                 </div>
             </div>
 
             <div class="table-container">
                 <div class="table-header">
                     <h2>Top Expenses</h2>
-                    <select id="timeRange">
-                        <option value="current">Current Month</option>
-                        <option value="last">Last Month</option>
-                        <option value="both">Both Months</option>
-                    </select>
                 </div>
                 <table id="topExpensesTable">
                     <thead>

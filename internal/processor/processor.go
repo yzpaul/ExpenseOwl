@@ -24,7 +24,7 @@ func (p *Processor) ProcessExpenses(expenses []*models.Expense) (*ProcessedData,
 }
 
 func (p *Processor) calculateMonthlyTotals(expenses []*models.Expense, now time.Time) []MonthlyTotal {
-	// Create a map to store totals: month -> category -> total
+	// Create a map to store totals: yearMonth -> category -> total
 	monthCategoryTotals := make(map[string]map[string]float64)
 
 	// Get start date (6 months ago)
@@ -49,7 +49,6 @@ func (p *Processor) calculateMonthlyTotals(expenses []*models.Expense, now time.
 
 	// Convert map to slice of MonthlyTotal
 	var result []MonthlyTotal
-
 	for monthKey, categoryTotals := range monthCategoryTotals {
 		monthTime, _ := time.Parse("2006-01", monthKey)
 
