@@ -9,6 +9,7 @@ import (
 	"github.com/tanq16/budgetlord/internal/api"
 	"github.com/tanq16/budgetlord/internal/config"
 	"github.com/tanq16/budgetlord/internal/storage/jsonfile"
+	"github.com/tanq16/budgetlord/internal/web"
 )
 
 func main() {
@@ -29,10 +30,22 @@ func main() {
 	// Initialize handler
 	handler := api.NewHandler(storage)
 
-	// Set up routes
+	// Set up API routes
 	http.HandleFunc("/expense", handler.AddExpense)
 	http.HandleFunc("/expenses", handler.GetExpenses)
 	http.HandleFunc("/expenses/processed", handler.GetProcessedExpenses)
+
+	// Set up static file serving
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.GetStaticFileSystem())))
+
+	// Set up index page
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		http.FileServer(web.GetFileSystem()).ServeHTTP(w, r)
+	})
 
 	// Start server
 	log.Printf("Starting server on port %s...", cfg.ServerPort)

@@ -6,34 +6,70 @@
     <title>BudgetLord</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
 </head>
 <body class="dark-mode">
     <div class="container">
         <header>
             <h1>BudgetLord</h1>
+            <div id="currentDate"></div>
         </header>
+
+        <div class="summary-stats">
+            <div class="stat-card">
+                <h3>This Month</h3>
+                <div class="value" id="thisMonthTotal">--</div>
+                <div class="trend-indicator" id="monthTrend"></div>
+            </div>
+            <div class="stat-card">
+                <h3>Avg. Monthly</h3>
+                <div class="value" id="avgMonthly">--</div>
+            </div>
+            <div class="stat-card">
+                <h3>Top Category</h3>
+                <div class="value" id="topCategory">--</div>
+            </div>
+        </div>
 
         <main>
             <div class="chart-container">
                 <div class="chart-box">
-                    <h2>Monthly Trends</h2>
+                    <div class="chart-header">
+                        <h2>Monthly Trends</h2>
+                        <div class="chart-controls">
+                            <select id="chartType">
+                                <option value="line">Line</option>
+                                <option value="bar">Bar</option>
+                            </select>
+                        </div>
+                    </div>
                     <canvas id="monthlyTrendsChart"></canvas>
                 </div>
                 
                 <div class="chart-box">
-                    <h2>Category Distribution</h2>
+                    <div class="chart-header">
+                        <h2>Category Distribution</h2>
+                    </div>
                     <canvas id="categoryPieChart"></canvas>
                 </div>
             </div>
 
             <div class="table-container">
-                <h2>Top Expenses</h2>
+                <div class="table-header">
+                    <h2>Top Expenses</h2>
+                    <select id="timeRange">
+                        <option value="current">Current Month</option>
+                        <option value="last">Last Month</option>
+                        <option value="both">Both Months</option>
+                    </select>
+                </div>
                 <table id="topExpensesTable">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>Category</th>
-                            <th>Amount</th>
+                            <th class="amount">Amount</th>
                             <th>Date</th>
                         </tr>
                     </thead>
