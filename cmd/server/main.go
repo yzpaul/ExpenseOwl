@@ -33,10 +33,10 @@ func main() {
 	// Set up API routes
 	http.HandleFunc("/expense", handler.AddExpense)
 	http.HandleFunc("/expenses", handler.GetExpenses)
-	http.HandleFunc("/expenses/processed", handler.GetProcessedExpenses)
+	// http.HandleFunc("/expenses/processed", handler.GetProcessedExpenses)
 
 	// Set up static file serving
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.GetStaticFileSystem())))
+	// http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(web.GetStaticFileSystem())))
 
 	// Set up index page
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

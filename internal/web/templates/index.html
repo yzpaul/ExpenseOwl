@@ -3,62 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BudgetLord</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>BudgetLord - Category Breakdown</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --border: #404040;
+            --accent: #3498db;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .month-navigation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-button {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .nav-button:hover {
+            background-color: var(--accent);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .current-month {
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .chart-container {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .chart-box {
+            flex: 1;
+            height: 400px;
+        }
+
+        .legend-box {
+            flex: 1;
+            padding: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .color-box {
+            width: 16px;
+            height: 16px;
+            margin-right: 1rem;
+            border-radius: 3px;
+        }
+
+        .legend-text {
+            display: flex;
+            justify-content: space-between;
+            flex: 1;
+        }
+
+        .amount {
+            font-family: monospace;
+            color: var(--text-secondary);
+        }
+
+        .no-data {
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                flex-direction: column;
+            }
+            
+            .chart-box {
+                height: 300px;
+            }
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-    <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
 </head>
-<body class="dark-mode">
+<body>
     <div class="container">
         <header>
-            <h1>BudgetLord</h1>
-            <div id="currentDate"></div>
+            <h1>Category Breakdown</h1>
         </header>
 
-        <main>
-            <div class="chart-container">
-                <div class="chart-box">
-                    <div class="chart-header">
-                        <h2>Monthly Trends</h2>
-                        <div class="chart-controls">
-                            <select id="chartType">
-                                <option value="line">Line</option>
-                                <option value="bar">Bar</option>
-                            </select>
-                        </div>
-                    </div>
-                    <canvas id="monthlyTrendsChart"></canvas>
-                </div>
-                
-                <div class="chart-box">
-                    <div class="chart-header">
-                        <h2>Monthly Trends</h2>
-                    </div>
-                    <canvas id="monthlyTrendsChart"></canvas>
-                </div>
-            </div>
+        <div class="month-navigation">
+            <button id="prevMonth" class="nav-button">← Previous</button>
+            <div class="current-month" id="currentMonth"></div>
+            <button id="nextMonth" class="nav-button">Next →</button>
+        </div>
 
-            <div class="table-container">
-                <div class="table-header">
-                    <h2>Top Expenses</h2>
-                </div>
-                <table id="topExpensesTable">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th class="amount">Amount</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Will be populated by JavaScript -->
-                    </tbody>
-                </table>
+        <div class="chart-container">
+            <div class="chart-box">
+                <canvas id="categoryPieChart"></canvas>
             </div>
-        </main>
+            <div class="legend-box" id="customLegend">
+                <!-- Legend will be populated by JavaScript -->
+            </div>
+        </div>
     </div>
-    <script src="/static/js/app.js"></script>
+    <script>
+        // Category colors mapping
+        const categoryColors = {
+            'Dining': '#FF6B6B',
+            'Entertainment': '#4ECDC4',
+            'Groceries': '#45B7D1',
+            'Healthcare': '#96CEB4',
+            'Rent': '#FFBE0B',
+            'Shopping': '#FF006E',
+            'Transportation': '#8338EC',
+            'Utilities': '#3A86FF',
+            'Food': '#FB5607'
+        };
+
+        // Chart.js defaults
+        Chart.defaults.color = '#b3b3b3';
+        Chart.defaults.borderColor = '#404040';
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+
+        let pieChart = null;
+        let currentDate = new Date();
+        let allExpenses = [];
+        
+        // Format month for display
+        function formatMonth(date) {
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric',
+                month: 'long'
+            });
+        }
+
+        // Update month display and navigation buttons
+        function updateMonthDisplay() {
+            document.getElementById('currentMonth').textContent = formatMonth(currentDate);
+            
+            // Disable next month button if current month is reached
+            const now = new Date();
+            const isCurrentMonth = currentDate.getMonth() === now.getMonth() 
+                               && currentDate.getFullYear() === now.getFullYear();
+            document.getElementById('nextMonth').disabled = isCurrentMonth;
+        }
+
+        // Get start and end of month
+        function getMonthBounds(date) {
+            const start = new Date(date.getFullYear(), date.getMonth(), 1);
+            const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
+            return { start, end };
+        }
+
+        // Filter expenses for current month
+        function getMonthExpenses(expenses) {
+            const { start, end } = getMonthBounds(currentDate);
+            return expenses.filter(exp => {
+                const expDate = new Date(exp.date);
+                return expDate >= start && expDate <= end;
+            });
+        }
+
+        // Calculate category breakdown for current month
+        function calculateCategoryBreakdown(expenses) {
+            const categoryTotals = {};
+            let totalAmount = 0;
+
+            expenses.forEach(exp => {
+                categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+                totalAmount += exp.amount;
+            });
+
+            return Object.entries(categoryTotals).map(([category, total]) => ({
+                category,
+                total,
+                percentage: (total / totalAmount) * 100
+            })).sort((a, b) => b.total - a.total);
+        }
+
+        async function initialize() {
+            try {
+                const response = await fetch('/expenses');
+                if (!response.ok) throw new Error('Failed to fetch data');
+                allExpenses = await response.json();
+                
+                updateMonthDisplay();
+                updateChartAndLegend();
+            } catch (error) {
+                console.error('Failed to initialize dashboard:', error);
+            }
+        }
+
+        function updateChartAndLegend() {
+            const monthExpenses = getMonthExpenses(allExpenses);
+            const categoryData = calculateCategoryBreakdown(monthExpenses);
+            
+            if (categoryData.length === 0) {
+                showNoDataMessage();
+            } else {
+                createPieChart(categoryData);
+                updateLegend(categoryData);
+            }
+        }
+
+        function showNoDataMessage() {
+            if (pieChart) {
+                pieChart.destroy();
+                pieChart = null;
+            }
+            
+            const chartCanvas = document.getElementById('categoryPieChart');
+            const ctx = chartCanvas.getContext('2d');
+            ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+            
+            const legendContainer = document.getElementById('customLegend');
+            legendContainer.innerHTML = '<div class="no-data">No expenses recorded for this month</div>';
+        }
+
+        function createPieChart(categoryData) {
+            if (pieChart) pieChart.destroy();
+            
+            pieChart = new Chart('categoryPieChart', {
+                type: 'doughnut',
+                data: {
+                    labels: categoryData.map(c => c.category),
+                    datasets: [{
+                        data: categoryData.map(c => c.total),
+                        backgroundColor: categoryData.map(c => categoryColors[c.category] || '#38B000'),
+                        borderColor: '#1a1a1a',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${formatCurrency(value)} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateLegend(categoryData) {
+            const legendContainer = document.getElementById('customLegend');
+            legendContainer.innerHTML = '<h2>Categories</h2>';
+            
+            categoryData.forEach(category => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                
+                const color = categoryColors[category.category] || '#38B000';
+                const percentage = (category.percentage).toFixed(1);
+                
+                item.innerHTML = `
+                    <div class="color-box" style="background-color: ${color}"></div>
+                    <div class="legend-text">
+                        <span>${category.category} (${percentage}%)</span>
+                        <span class="amount">${formatCurrency(category.total)}</span>
+                    </div>
+                `;
+                
+                legendContainer.appendChild(item);
+            });
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            }).format(amount);
+        }
+
+        // Event Listeners
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
+            updateMonthDisplay();
+            updateChartAndLegend();
+        });
+
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);
+            updateMonthDisplay();
+            updateChartAndLegend();
+        });
+
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
 </body>
 </html>
