@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"expense-manager/internal/models"
+	"github.com/tanq16/budgetlord/internal/models"
 )
 
 type Storage interface {
