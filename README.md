@@ -9,7 +9,7 @@
 </p>
 </p>
 
-BudgetLord is a lightweight, single-user expense tracking system that combines the simplicity of CLI-based input with powerful web-based visualization. It provides an intuitive way to track daily expenses, visualize spending patterns, and maintain a clear overview of your financial habits through an elegant dark-mode interface.
+BudgetLord is a lightweight, single-user expense tracking system that combines the simplicity of CLI-based input with web-based visualization. It provides an intuitive way to track daily expenses, visualize spending patterns, and maintain a clear overview of your financial habits through an elegant dark or light mode interface.
 
 ## Screenshots
 
@@ -19,14 +19,14 @@ BudgetLord is a lightweight, single-user expense tracking system that combines t
   <img src="/assets/table-dark.png" alt="Table Dark" width="400" align="top" />
   <img src="/assets/table-light.png" alt="Table Light" width="400" align="top" />
   <br/>
-  <em>Dashboard View - Dark and Light modes</em>
+  <em>Desktop View - Dark and Light modes</em>
   <br/><br/>
   <img src="/assets/mobile-dashboard-dark.png" alt="Mobile Dashboard Dark" height="400" align="top" />
   <img src="/assets/mobile-dashboard-light.png" alt="Mobile Dashboard Light" height="400" align="top" />
   <img src="/assets/mobile-table-dark.png" alt="Mobile Table Dark" height="400" align="top" />
   <img src="/assets/mobile-table-light.png" alt="Mobile Table Light" height="400" align="top" />
   <br/>
-  <em>Table View - Dark and Light modes</em>
+  <em>Mobile View - Dark and Light modes</em>
 </p>
 
 The interface automatically adapts to your system preferences, featuring:
