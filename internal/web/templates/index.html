@@ -76,16 +76,28 @@
             background-color: var(--bg-secondary);
             border-radius: 8px;
             padding: 1.5rem;
+            min-height: 500px;
+            align-items: center;
         }
 
         .chart-box {
             flex: 1;
             height: 400px;
+            display: flex;
+            align-items: center;
+        }
+
+        .chart-box canvas {
+            width: 100%;
+            max-height: 400px;
         }
 
         .legend-box {
             flex: 1;
             padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .legend-item {
@@ -122,10 +134,41 @@
         @media (max-width: 768px) {
             .chart-container {
                 flex-direction: column;
+                min-height: auto;
+                padding: 1rem;
             }
-            
+
             .chart-box {
-                height: 300px;
+                height: 300px;  /* Reduced height for mobile */
+                width: 100%;
+            }
+
+            .chart-box canvas {
+                max-height: 300px;  /* Match the container height */
+            }
+
+            .legend-box {
+                width: 100%;
+                padding: 0.5rem;
+            }
+
+            .legend-item {
+                margin-bottom: 0.5rem;  /* Reduced spacing between legend items */
+            }
+        }
+
+        /* Add aspect ratio handling for very short screens */
+        @media (max-height: 600px) {
+            .chart-container {
+                min-height: auto;
+            }
+
+            .chart-box {
+                height: 250px;
+            }
+
+            .chart-box canvas {
+                max-height: 250px;
             }
         }
 
