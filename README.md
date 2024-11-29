@@ -16,13 +16,13 @@ BudgetLord is a lightweight, single-user expense tracking system that combines t
 <p align="center">
   <img src="/assets/dashboard-dark.png" alt="Dashboard Dark" width="400" align="top" />
   <img src="/assets/dashboard-light.png" alt="Dashboard Light" width="400" align="top" />
-  <img src="/assets/mobile-dashboard-dark.png" alt="Mobile Dashboard Dark" height="400" align="top" />
-  <img src="/assets/mobile-dashboard-light.png" alt="Mobile Dashboard Light" height="400" align="top" />
+  <img src="/assets/table-dark.png" alt="Table Dark" width="400" align="top" />
+  <img src="/assets/table-light.png" alt="Table Light" width="400" align="top" />
   <br/>
   <em>Dashboard View - Dark and Light modes</em>
   <br/><br/>
-  <img src="/assets/table-dark.png" alt="Table Dark" width="400" align="top" />
-  <img src="/assets/table-light.png" alt="Table Light" width="400" align="top" />
+  <img src="/assets/mobile-dashboard-dark.png" alt="Mobile Dashboard Dark" height="400" align="top" />
+  <img src="/assets/mobile-dashboard-light.png" alt="Mobile Dashboard Light" height="400" align="top" />
   <img src="/assets/mobile-table-dark.png" alt="Mobile Table Dark" height="400" align="top" />
   <img src="/assets/mobile-table-light.png" alt="Mobile Table Light" height="400" align="top" />
   <br/>
