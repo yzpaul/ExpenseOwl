@@ -104,6 +104,9 @@ docker run -d \
   tanq16/budgetlord:main
 ```
 
+> [!WARNING]
+> The image only builds for AMD64, so you should build it yourself for other architectures.
+
 ## Usage
 
 ### CLI Mode
