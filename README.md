@@ -1,14 +1,54 @@
-# BudgetLord - Personal Expense Tracker
+# BudgetLord
 
-A lightweight, single-user expense tracking system with CLI support, dead-simple data visualization, and Docker deployment options.
+<p align="center">
+<img src="/assets/logo.png" alt="BudgetLord Logo" width="200" height="200" />
 
-## Overview
+<p align="center">
+<a href="https://github.com/tanq16/budgetlord/actions/workflows/release.yml"><img src="https://github.com/tanq16/budgetlord/actions/workflows/release.yml/badge.svg" alt="Release Build"></a>
+<a href="https://github.com/tanq16/budgetlord/actions/workflows/docker.yml"><img src="https://github.com/tanq16/budgetlord/actions/workflows/docker.yml/badge.svg" alt="Release Container"></a>
+</p>
+</p>
 
-This personal expense manager provides a simple yet effective way to track expenses through both a CLI and REST API, with spending patterns visualized through an intuitive web interface. Built with Go, it uses a straightforward JSON file storage solution and provides rich visualization of expense patterns.
+BudgetLord is a lightweight, single-user expense tracking system that combines the simplicity of CLI-based input with powerful web-based visualization. It provides an intuitive way to track daily expenses, visualize spending patterns, and maintain a clear overview of your financial habits through an elegant dark-mode interface.
+
+## Screenshots
+
+<p align="center">
+  <img src="/assets/dashboard-dark.png" alt="Dashboard Dark" width="400" align="top" />
+  <img src="/assets/dashboard-light.png" alt="Dashboard Light" width="400" align="top" />
+  <img src="/assets/mobile-dashboard-dark.png" alt="Mobile Dashboard Dark" width="400" align="top" />
+  <img src="/assets/mobile-dashboard-light.png" alt="Mobile Dashboard Light" width="400" align="top" />
+  <br/>
+  <em>Dashboard View - Dark and Light modes</em>
+  <br/><br/>
+  <img src="/assets/table-dark.png" alt="Table Dark" width="400" align="top" />
+  <img src="/assets/table-light.png" alt="Table Light" width="400" align="top" />
+  <img src="/assets/mobile-table-dark.png" alt="Mobile Table Dark" width="400" align="top" />
+  <img src="/assets/mobile-table-light.png" alt="Mobile Table Light" width="400" align="top" />
+  <br/>
+  <em>Table View - Dark and Light modes</em>
+</p>
+
+The interface automatically adapts to your system preferences, featuring:
+
+- **Dashboard View**:
+  - Interactive pie chart showing expense distribution
+  - Custom legend with percentage breakdowns
+  - Real-time category totals
+  - Seamless month-to-month navigation
+
+- **Table View**:
+  - Chronological expense listing
+  - Quick category reference
+  - Formatted currency display
+  - Responsive mobile design
+
+Both views feature automatic dark/light mode switching, elegant transitions, and a clean, minimalist design focused on data visibility.
 
 ## Features
 
 ### Core Functionality
+
 - Simple expense tracking with essential details
 - UUID-based expense identification
 - CLI for both server and client operations
@@ -18,12 +58,14 @@ This personal expense manager provides a simple yet effective way to track expen
 - Docker support with persistent storage
 
 ### Data Tracking
+
 - Expense name
 - Category classification
 - Amount tracking
 - Date recording
 
 ### Visualization Dashboard
+
 - Dark mode interface
 - Interactive data visualization
 - Three main aspects:
@@ -48,9 +90,9 @@ go build ./cmd/budgetlord
 
 ### Docker Installation
 
-1. Build the Docker image:
+1. Pull the Docker image:
 ```bash
-docker build -t budgetlord .
+docker pull tanq16/budgetlord:main
 ```
 
 2. Run with persistent storage:
@@ -59,7 +101,7 @@ docker run -d \
   --name budgetlord \
   -p 8080:8080 \
   -v budgetlord_data:/app/data \
-  budgetlord
+  tanq16/budgetlord:main
 ```
 
 ## Usage
@@ -81,6 +123,7 @@ The application can run in either server or client mode:
 ```
 
 In client mode, you'll be prompted to enter:
+
 1. Expense name (required)
 2. Category (select from provided list)
 3. Amount (required)
@@ -115,6 +158,7 @@ Access the web interface through your browser:
 - Table View: `http://localhost:8080/table`
 
 Features:
+
 - Switch between dashboard and table views
 - Navigate through months
 - View expense breakdowns by category
@@ -129,14 +173,15 @@ Features:
 ## Categories
 
 Default expense categories:
-- Food
-- Transportation
-- Housing
+
+- Food & Groceries
+- Travel
+- Rent
 - Utilities
 - Entertainment
 - Healthcare
 - Shopping
-- Other
+- Miscellaneous
 
 ## Technical Stack
 

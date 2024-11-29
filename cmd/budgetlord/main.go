@@ -20,14 +20,14 @@ import (
 )
 
 var categories = []string{
-	"Food",
-	"Transportation",
-	"Housing",
+	"Food & Groceries",
+	"Travel",
+	"Rent",
 	"Utilities",
 	"Entertainment",
 	"Healthcare",
 	"Shopping",
-	"Other",
+	"Miscellaneous",
 }
 
 func runServer() {
