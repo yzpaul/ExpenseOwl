@@ -6,12 +6,24 @@
     <title>BudgetLord - Category Breakdown</title>
     <style>
         :root {
+            /* Default dark mode colors */
             --bg-primary: #1a1a1a;
             --bg-secondary: #2d2d2d;
             --text-primary: #ffffff;
             --text-secondary: #b3b3b3;
             --border: #404040;
             --accent: #3498db;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #ffffff;
+                --bg-secondary: #f5f5f5;
+                --text-primary: #333333;
+                --text-secondary: #666666;
+                --border: #e0e0e0;
+                --accent: #69afde;
+            }
         }
 
         body {
