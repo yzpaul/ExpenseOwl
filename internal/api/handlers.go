@@ -90,6 +90,30 @@ func (h *Handler) ServeTableView(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *Handler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: "ID parameter is required"})
+		return
+	}
+
+	if err := h.storage.DeleteExpense(id); err != nil {
+		if err == storage.ErrExpenseNotFound {
+			writeJSON(w, http.StatusNotFound, ErrorResponse{Error: "Expense not found"})
+			return
+		}
+		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Failed to delete expense"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"status": "success"})
+}
+
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

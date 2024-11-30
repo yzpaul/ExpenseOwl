@@ -7,4 +7,5 @@ import (
 type Storage interface {
 	SaveExpense(expense *models.Expense) error
 	GetAllExpenses() ([]*models.Expense, error)
+	DeleteExpense(id string) error
 }

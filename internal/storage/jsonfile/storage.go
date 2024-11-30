@@ -71,6 +71,36 @@ func (s *Storage) SaveExpense(expense *models.Expense) error {
 	return s.writeFile(data)
 }
 
+func (s *Storage) DeleteExpense(id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// Read current data
+	data, err := s.readFile()
+	if err != nil {
+		return fmt.Errorf("failed to read storage file: %v", err)
+	}
+
+	// Find and remove the expense
+	found := false
+	newExpenses := make([]*models.Expense, 0, len(data.Expenses)-1)
+	for _, exp := range data.Expenses {
+		if exp.ID != id {
+			newExpenses = append(newExpenses, exp)
+		} else {
+			found = true
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("expense with ID %s not found", id)
+	}
+
+	// Update data with expense removed
+	data.Expenses = newExpenses
+	return s.writeFile(data)
+}
+
 func (s *Storage) GetAllExpenses() ([]*models.Expense, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

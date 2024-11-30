@@ -48,6 +48,7 @@ func runServer() {
 	http.HandleFunc("/expense", handler.AddExpense)
 	http.HandleFunc("/expenses", handler.GetExpenses)
 	http.HandleFunc("/table", handler.ServeTableView)
+	http.HandleFunc("/expense/delete", handler.DeleteExpense)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
