@@ -42,6 +42,7 @@ The interface automatically adapts to your system preferences, featuring:
   - Quick category reference
   - Formatted currency display
   - Responsive mobile design
+  - Expense deletion with confirmation
 
 Both views feature automatic dark/light mode switching, elegant transitions, and a clean, minimalist design focused on data visibility.
 
@@ -72,6 +73,29 @@ Both views feature automatic dark/light mode switching, elegant transitions, and
   1. Dashboard with expense category breakdown (pie chart)
   2. Table view for detailed expense listing
   3. Month-by-month navigation
+
+### Progressive Web App (PWA)
+
+BudgetLord can be installed as a Progressive Web App on desktop and mobile devices, offering:
+
+- **Installation**: Install directly from your browser to your device
+- **Standalone Mode**: Runs in its own window, without browser navigation bars
+- **App-like Experience**: 
+  - Full-screen interface
+  - Native-like app icon in your launcher/home screen
+  - System-integrated dark/light mode support
+  - Responsive design for all screen sizes
+- **Platform Support**:
+  - Desktop: Chrome, Edge, and other Chromium-based browsers
+  - iOS: Safari
+  - Android: Chrome and other modern browsers
+
+To install BudgetLord as a PWA:
+1. Open BudgetLord in a supported browser
+2. Look for the "Install" or "Add to Home Screen" option:
+   - Desktop: Click the install icon in your browser's address bar
+   - iOS: Use Safari's "Add to Home Screen" option in the share menu
+   - Android: Use Chrome's "Add to Home Screen" option in the menu
 
 ## Installation
 
