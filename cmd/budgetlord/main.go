@@ -49,6 +49,9 @@ func runServer() {
 	http.HandleFunc("/expenses", handler.GetExpenses)
 	http.HandleFunc("/table", handler.ServeTableView)
 	http.HandleFunc("/expense/delete", handler.DeleteExpense)
+	http.HandleFunc("/manifest.json", handler.ServeManifest)
+	http.HandleFunc("/sw.js", handler.ServeServiceWorker)
+	http.HandleFunc("/pwa/", handler.ServePWAIcon)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)

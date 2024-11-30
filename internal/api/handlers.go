@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"path"
 	"time"
 
 	"github.com/tanq16/budgetlord/internal/models"
@@ -112,6 +113,32 @@ func (h *Handler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]string{"status": "success"})
+}
+
+// PWA handlers
+func (h *Handler) ServeManifest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if err := web.ServeTemplate(w, "manifest.json"); err != nil {
+		http.Error(w, "Failed to serve manifest", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *Handler) ServeServiceWorker(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/javascript")
+	if err := web.ServeTemplate(w, "sw.js"); err != nil {
+		http.Error(w, "Failed to serve service worker", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *Handler) ServePWAIcon(w http.ResponseWriter, r *http.Request) {
+	iconName := path.Base(r.URL.Path)
+	w.Header().Set("Content-Type", "image/png")
+	if err := web.ServeTemplate(w, "pwa/"+iconName); err != nil {
+		http.Error(w, "Failed to serve icon", http.StatusInternalServerError)
+		return
+	}
 }
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {
