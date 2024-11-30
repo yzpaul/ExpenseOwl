@@ -5,7 +5,6 @@
 
 <p align="center">
 <a href="https://github.com/tanq16/budgetlord/actions/workflows/release.yml"><img src="https://github.com/tanq16/budgetlord/actions/workflows/release.yml/badge.svg" alt="Release Build"></a>
-<a href="https://github.com/tanq16/budgetlord/actions/workflows/docker.yml"><img src="https://github.com/tanq16/budgetlord/actions/workflows/docker.yml/badge.svg" alt="Release Container"></a>
 </p>
 </p>
 
