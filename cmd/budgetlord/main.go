@@ -20,7 +20,8 @@ import (
 )
 
 var categories = []string{
-	"Food & Groceries",
+	"Food",
+	"Groceries",
 	"Travel",
 	"Rent",
 	"Utilities",
