@@ -18,22 +18,22 @@
     <title>BudgetLord - Category Breakdown</title>
     <style>
         :root {
-            /* Default dark mode colors */
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2d2d2d;
-            --text-primary: #ffffff;
+            /* Dark mode - modern dark blue theme */
+            --bg-primary: #081528;
+            --bg-secondary: #101f3b;
+            --text-primary: #f4f4f4;
             --text-secondary: #b3b3b3;
-            --border: #404040;
-            --accent: #3498db;
+            --border: #1a365d;
+            --accent: #69afde;
         }
 
         @media (prefers-color-scheme: light) {
             :root {
-                --bg-primary: #ffffff;
-                --bg-secondary: #f5f5f5;
-                --text-primary: #333333;
-                --text-secondary: #666666;
-                --border: #e0e0e0;
+                --bg-primary: #f2e5d7;
+                --bg-secondary: #faecdd;
+                --text-primary: #2e2e2e;
+                --text-secondary: #3e3e3e;
+                --border: #e6ddd4;
                 --accent: #69afde;
             }
         }
@@ -75,10 +75,24 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav-button, .view-button {
+            border-radius: 9999px;
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border);
         }
 
         .nav-button:hover {
             background-color: var(--accent);
+        }
+
+        .nav-button:hover, .view-button:hover {
+            background-color: var(--accent);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .nav-button:disabled {
@@ -204,24 +218,20 @@
             .legend-item {
                 margin-bottom: 0.5rem;
             }
-        }
 
-        /* Add aspect ratio handling for very short screens */
-        @media (max-height: 600px) {
-            .chart-container {
-                min-height: auto;
+            .month-navigation {
+                gap: 0.2rem;
             }
-
-            .chart-box {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                padding: 1rem 0;
-                margin: auto;
+            
+            .nav-button {
+                padding: 0.25rem 0.75rem;
+                font-size: 1rem;
             }
-
-            .chart-box canvas {
-                max-height: 250px;
+            
+            .current-month {
+                font-size: 1rem;
+                text-align: center;
+                min-width: 150px;
             }
         }
 
@@ -237,7 +247,7 @@
             border: 1px solid var(--border);
             color: var(--text-primary);
             padding: 0.5rem 1rem;
-            border-radius: 4px;
+            border-radius: 9999px;
             cursor: pointer;
             transition: background-color 0.2s;
             text-decoration: none;
@@ -257,7 +267,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>BudgetLord</h1>
+            <h1 align="center">BudgetLord</h1>
             <div class="nav-bar">
                 <a href="/" class="view-button active">Dashboard</a>
                 <a href="/table" class="view-button">Table View</a>
@@ -419,7 +429,7 @@
                         <span>Total:</span>
                         <span class="amount">
                             ${formatCurrency(totalExpenses)}
-                            <span style="opacity: 0.7">(${formatCurrency(totalWithoutRent)} w/o rent)</span>
+                            <span>(${formatCurrency(totalWithoutRent)} w/o rent)</span>
                         </span>
                     </div>
                 </div>
