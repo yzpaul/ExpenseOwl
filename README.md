@@ -1,5 +1,5 @@
 <p align="center">
-<img src="/assets/logo.png" alt="ExpenseOwl Logo" width="200" height="200" /><br>
+<img src="/assets/logo.png" alt="ExpenseOwl Logo" width="225" height="225" /><br>
 <h1 align="center">ExpenseOwl</h1><br>
 
 <p align="center">
@@ -11,7 +11,47 @@
 
 # Why Create This?
 
+There are a ton of amazing projects for expense tracking all across GitHub ([Actual](https://github.com/actualbudget/actual), [Firefly III](https://github.com/firefly-iii/firefly-iii), etc.). They're all great, but they aren't the *fastest* when trying to add expenses, and offer a ton of features which I don't use. Some of them also use varying formats of data or complex API. Don't get me wrong, they're great when they fit your needs, but I wanted something dead simple that just gives me a pie chart per month and a tabular representation. NOTHING else!
 
+Hence, I ended up creating this project, which I use to track my expenses. I also wanted data to be just JSON format, so I can do whatever I want with that, including a quick `jq` command to convert it to CSV. Also, the UI is mobile-friendly, so it works great for homelab use.
+
+# Features
+
+### Core Functionality
+
+- Simple expense tracking with essential details only
+- UUID-based expense identification in the backend
+- Flat file storage system (default `data/expenses.json`)
+- Docker container with support for persistent storage
+- REST API for expense management
+- Single-user focused (mainly for a homelab deployment)
+- CLI for both server and client (if needed) operations
+
+### Visualization
+
+1. Dashboard with expense category breakdown (pie chart)
+  - Click on a category to exclude it from the graph, click again to reset
+2. Table view for detailed expense listing
+  - This is where you can delete individual expenses
+3. Month-by-month navigation
+
+### Progressive Web App (PWA)
+
+ExpenseOwl can be installed as a Progressive Web App on desktop and mobile devices. To install:
+
+- Desktop: Click the install icon in your browser's address bar
+- iOS: Use Safari's "Add to Home Screen" option in the share menu
+- Android: Use Chrome's "Add to Home Screen" option in the menu
+
+### Intention of Use
+
+Just use this to add expenses quickly. It's been designed to help you do that. The default name for an expense is `unnamed` and the date is automatically set to current date. There's a set list of categories to choose from.
+
+In the ideal case, `enter the amount and choose category` - that's it!
+
+For a bit more involved case, `enter the amount and name, choose the category, and select the date` - still very simple!
+
+The application only allows addition and deletion, there's no need for editing. There are no tags, no wallet info, nothing. Once again, plain and simple is the main intention with this one.
 
 # Screenshots
 
@@ -37,58 +77,20 @@ The interface automatically adapts to system preferences for themes. The views h
   - Responsive mobile design
   - Expense deletion with confirmation
 
-# Features
-
-### Core Functionality
-
-- Simple expense tracking with essential details
-- UUID-based expense identification
-- CLI for both server and client operations
-- REST API for expense management
-- Flat file storage system (default `data/expenses.json`)
-- Single-user focused (mainly for a homelab deployment)
-- Docker container with support for persistent storage
-
-### Visualization Dashboard
-
-Interactive data visualization via pie chart with three main aspects:
-  1. Dashboard with expense category breakdown (pie chart)
-  2. Table view for detailed expense listing
-  3. Month-by-month navigation
-
-### Progressive Web App (PWA)
-
-ExpenseOwl can be installed as a Progressive Web App on desktop and mobile devices. To install:
-
-1. Open expenseowl in a supported browser
-2. Look for the "Install" or "Add to Home Screen" option:
-   - Desktop: Click the install icon in your browser's address bar
-   - iOS: Use Safari's "Add to Home Screen" option in the share menu
-   - Android: Use Chrome's "Add to Home Screen" option in the menu
-
 # Installation
 
-### Building from Source
+### Go Install
 
-1. Clone the repository:
 ```bash
-git clone https://github.com/tanq16/expenseowl.git
-cd expenseowl
-```
-
-2. Build the binary:
-```bash
-go build ./cmd/expenseowl
+go install github.com/tanq16/expenseowl/cmd/expenseowl@latest
 ```
 
 ### Docker Installation
 
-1. Pull the Docker image:
 ```bash
 docker pull tanq16/expenseowl:main
 ```
 
-2. Run with persistent storage:
 ```bash
 docker run -d \
   --name expenseowl \
@@ -100,13 +102,45 @@ docker run -d \
 > [!WARNING]
 > The image only builds for AMD64, so you should build it yourself for other architectures.
 
+To use it with Docker compose or a container-management system like Portainer or Dockge, use this YAML definition:
+
+```yaml
+version: "3.8"
+services:
+  budgetlord:
+    image: tanq16/expenseowl:main
+    restart: unless-stopped
+    ports:
+      - 5006:8080
+    volumes:
+      - /home/tanq/expenseowl:/app/data # CHANGE DIR
+```
+
+### Building from Source
+
+```bash
+git clone https://github.com/tanq16/expenseowl.git && \
+cd expenseowl
+```
+
+```bash
+go build ./cmd/expenseowl
+```
+
 # Usage
+
+Ideally, once deployed, just use the web interface and you're good to go. Access the web interface through your browser:
+
+- Dashboard: `http://localhost:8080/`
+- Table View: `http://localhost:8080/table`
+
+If there are command-line automations that are required for use with the REST API, read on!
 
 ### CLI Mode
 
-The application can run in either server or client mode:
+The application binary can run in either server or client mode:
 
-#### Server Mode (Default)
+Server Mode (Default):
 
 ```bash
 ./expenseowl
@@ -114,23 +148,17 @@ The application can run in either server or client mode:
 ./expenseowl --serve
 ```
 
-#### Client Mode
+Client Mode:
 
 ```bash
 ./expenseowl --client --addr localhost:8080
 ```
 
-In client mode, you'll be prompted to enter:
-
-1. Expense name (required)
-2. Category (select from provided list)
-3. Amount (required)
-4. Date (optional, format: YYYY-MM-DD)
-   - If no date is provided, current date is used
+In client mode, you'll be prompted to enter the expense name, category (select from a list), amount, and date (in YYYY-MM-DD; optional, sets to current date when not provided).
 
 ### REST API
 
-#### Add Expense
+Add Expense:
 
 ```bash
 curl -X PUT http://localhost:8080/expense \
@@ -143,31 +171,15 @@ curl -X PUT http://localhost:8080/expense \
 }'
 ```
 
-#### Get All Expenses
+Get All Expenses:
 
 ```bash
 curl http://localhost:8080/expenses
 ```
 
-### Web Interface
-
-Access the web interface through your browser:
-
-- Dashboard: `http://localhost:8080/`
-- Table View: `http://localhost:8080/table`
-
-Features:
-
-- Switch between dashboard and table views
-- Navigate through months
-- View expense breakdowns by category
-- See detailed expense listings
-
 # Technical Stack
 
 - Backend: Go
 - Storage: JSON file system
-- Frontend: Web-based dashboard with Chart.js
-- API: REST
-- Containerization: Docker support
+- Frontend: Chart.js and vanialla web stack (HTML, JS, CSS)
 - Interface: CLI + Web UI
