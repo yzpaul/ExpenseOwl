@@ -116,18 +116,31 @@
             max-height: 400px;
         }
 
-        .legend-box {
-            flex: 1;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
         .legend-item {
             display: flex;
             align-items: center;
             margin-bottom: 1rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .legend-item.disabled .color-box {
+            background-color: #808080 !important;
+            position: relative;
+        }
+
+        .legend-item.disabled .color-box::after {
+            content: '×';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        .legend-item.disabled .legend-text {
+            opacity: 0.5;
         }
 
         .color-box {
@@ -135,6 +148,15 @@
             height: 16px;
             margin-right: 1rem;
             border-radius: 3px;
+            transition: background-color 0.3s ease;
+        }
+
+        .legend-box {
+            flex: 1;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .legend-text {
@@ -163,12 +185,15 @@
             }
 
             .chart-box {
-                height: 300px;  /* Reduced height for mobile */
-                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 1rem 0;
+                margin: auto;
             }
 
             .chart-box canvas {
-                max-height: 300px;  /* Match the container height */
+                max-height: 300px;
             }
 
             .legend-box {
@@ -177,7 +202,7 @@
             }
 
             .legend-item {
-                margin-bottom: 0.5rem;  /* Reduced spacing between legend items */
+                margin-bottom: 0.5rem;
             }
         }
 
@@ -188,7 +213,11 @@
             }
 
             .chart-box {
-                height: 250px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 1rem 0;
+                margin: auto;
             }
 
             .chart-box canvas {
@@ -251,91 +280,42 @@
         </div>
     </div>
     <script>
-        // Category colors mapping
-        const categoryColors = {
-            'Dining': '#FF6B6B',
-            'Entertainment': '#4ECDC4',
-            'Groceries': '#45B7D1',
-            'Healthcare': '#96CEB4',
-            'Rent': '#FFBE0B',
-            'Shopping': '#FF006E',
-            'Transportation': '#8338EC',
-            'Utilities': '#3A86FF',
-            'Food': '#FB5607'
-        };
-
-        // Chart.js defaults
-        Chart.defaults.color = '#b3b3b3';
-        Chart.defaults.borderColor = '#404040';
-        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-
         let pieChart = null;
         let currentDate = new Date();
         let allExpenses = [];
-        
-        // Format month for display
-        function formatMonth(date) {
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric',
-                month: 'long'
+        let disabledCategories = new Set();
+        let categoryColors = {};
+        const colorPalette = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', 
+            '#FFBE0B', '#FF006E', '#8338EC', '#3A86FF', 
+            '#FB5607', '#38B000', '#9B5DE5', '#F15BB5'
+        ];
+        function assignCategoryColors(categories) {
+            categories.forEach((category, index) => {
+                if (!categoryColors[category]) {
+                    categoryColors[category] = colorPalette[index % colorPalette.length];
+                }
             });
         }
 
-        // Update month display and navigation buttons
-        function updateMonthDisplay() {
-            document.getElementById('currentMonth').textContent = formatMonth(currentDate);
-            
-            // Disable next month button if current month is reached
-            const now = new Date();
-            const isCurrentMonth = currentDate.getMonth() === now.getMonth() 
-                               && currentDate.getFullYear() === now.getFullYear();
-            document.getElementById('nextMonth').disabled = isCurrentMonth;
-        }
-
-        // Get start and end of month
-        function getMonthBounds(date) {
-            const start = new Date(date.getFullYear(), date.getMonth(), 1);
-            const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
-            return { start, end };
-        }
-
-        // Filter expenses for current month
-        function getMonthExpenses(expenses) {
-            const { start, end } = getMonthBounds(currentDate);
-            return expenses.filter(exp => {
-                const expDate = new Date(exp.date);
-                return expDate >= start && expDate <= end;
-            });
-        }
-
-        // Calculate category breakdown for current month
         function calculateCategoryBreakdown(expenses) {
             const categoryTotals = {};
             let totalAmount = 0;
 
             expenses.forEach(exp => {
-                categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
-                totalAmount += exp.amount;
+                if (!disabledCategories.has(exp.category)) {
+                    categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+                    totalAmount += exp.amount;
+                }
             });
 
-            return Object.entries(categoryTotals).map(([category, total]) => ({
-                category,
-                total,
-                percentage: (total / totalAmount) * 100
-            })).sort((a, b) => b.total - a.total);
-        }
-
-        async function initialize() {
-            try {
-                const response = await fetch('/expenses');
-                if (!response.ok) throw new Error('Failed to fetch data');
-                allExpenses = await response.json();
-                
-                updateMonthDisplay();
-                updateChartAndLegend();
-            } catch (error) {
-                console.error('Failed to initialize dashboard:', error);
-            }
+            return Object.entries(categoryTotals)
+                .map(([category, total]) => ({
+                    category,
+                    total,
+                    percentage: (total / totalAmount) * 100
+                }))
+                .sort((a, b) => b.total - a.total);
         }
 
         function updateChartAndLegend() {
@@ -350,20 +330,6 @@
             }
         }
 
-        function showNoDataMessage() {
-            if (pieChart) {
-                pieChart.destroy();
-                pieChart = null;
-            }
-            
-            const chartCanvas = document.getElementById('categoryPieChart');
-            const ctx = chartCanvas.getContext('2d');
-            ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-            
-            const legendContainer = document.getElementById('customLegend');
-            legendContainer.innerHTML = '<div class="no-data">No expenses recorded for this month</div>';
-        }
-
         function createPieChart(categoryData) {
             if (pieChart) pieChart.destroy();
             
@@ -373,7 +339,7 @@
                     labels: categoryData.map(c => c.category),
                     datasets: [{
                         data: categoryData.map(c => c.total),
-                        backgroundColor: categoryData.map(c => categoryColors[c.category] || '#38B000'),
+                        backgroundColor: categoryData.map(c => categoryColors[c.category]),
                         borderColor: '#1a1a1a',
                         borderWidth: 1
                     }]
@@ -404,23 +370,139 @@
             const legendContainer = document.getElementById('customLegend');
             legendContainer.innerHTML = '<h2>Categories</h2>';
             
-            categoryData.forEach(category => {
+            // Get unique categories from current month's expenses only
+            const monthExpenses = getMonthExpenses(allExpenses);
+            const currentMonthCategories = [...new Set(monthExpenses.map(exp => exp.category))];
+            
+            // Create a map of active category data for easy lookup
+            const categoryMap = new Map(categoryData.map(cat => [cat.category, cat]));
+            
+            currentMonthCategories.sort((a, b) => {
+                const dataA = categoryMap.get(a);
+                const dataB = categoryMap.get(b);
+                if (dataA && dataB) return dataB.total - dataA.total;
+                if (dataA) return -1;
+                if (dataB) return 1;
+                return a.localeCompare(b);
+            }).forEach(category => {
                 const item = document.createElement('div');
-                item.className = 'legend-item';
+                item.className = `legend-item${disabledCategories.has(category) ? ' disabled' : ''}`;
                 
-                const color = categoryColors[category.category] || '#38B000';
-                const percentage = (category.percentage).toFixed(1);
+                const color = categoryColors[category];
+                const categoryData = categoryMap.get(category);
+                
+                const percentage = categoryData ? ` (${categoryData.percentage.toFixed(1)}%)` : '';
+                const amount = categoryData ? formatCurrency(categoryData.total) : '';
                 
                 item.innerHTML = `
                     <div class="color-box" style="background-color: ${color}"></div>
                     <div class="legend-text">
-                        <span>${category.category} (${percentage}%)</span>
-                        <span class="amount">${formatCurrency(category.total)}</span>
+                        <span>${category}${percentage}</span>
+                        <span class="amount">${amount}</span>
                     </div>
                 `;
                 
+                item.addEventListener('click', () => toggleCategory(category));
                 legendContainer.appendChild(item);
             });
+
+            // Calculate totals
+            const totalExpenses = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+            const totalWithoutRent = monthExpenses
+                .filter(exp => exp.category !== 'Rent')
+                .reduce((sum, exp) => sum + exp.amount, 0);
+
+            // Add totals section
+            const totalsHtml = `
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Total:</span>
+                        <span class="amount">
+                            ${formatCurrency(totalExpenses)}
+                            <span style="opacity: 0.7">(${formatCurrency(totalWithoutRent)} w/o rent)</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+            legendContainer.insertAdjacentHTML('beforeend', totalsHtml);
+        }
+
+        function toggleCategory(category) {
+            if (disabledCategories.has(category)) {
+                disabledCategories.delete(category);
+            } else {
+                disabledCategories.add(category);
+            }
+            updateChartAndLegend();
+        }
+
+        async function initialize() {
+            try {
+                const response = await fetch('/expenses');
+                if (!response.ok) throw new Error('Failed to fetch data');
+                allExpenses = await response.json();
+                
+                // Get unique categories and assign colors
+                const uniqueCategories = [...new Set(allExpenses.map(exp => exp.category))];
+                assignCategoryColors(uniqueCategories);
+                
+                updateMonthDisplay();
+                updateChartAndLegend();
+            } catch (error) {
+                console.error('Failed to initialize dashboard:', error);
+            }
+        }
+
+        Chart.defaults.color = '#b3b3b3';
+        Chart.defaults.borderColor = '#606060';
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        
+        // Format month for display
+        function formatMonth(date) {
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric',
+                month: 'long'
+            });
+        }
+
+        // Update month display and navigation buttons
+        function updateMonthDisplay() {
+            document.getElementById('currentMonth').textContent = formatMonth(currentDate);
+            
+            // Disable next month button if current month is reached
+            const now = new Date();
+            const isCurrentMonth = currentDate.getMonth() === now.getMonth() && currentDate.getFullYear() === now.getFullYear();
+            document.getElementById('nextMonth').disabled = isCurrentMonth;
+        }
+
+        // Get start and end of month
+        function getMonthBounds(date) {
+            const start = new Date(date.getFullYear(), date.getMonth(), 1);
+            const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
+            return { start, end };
+        }
+
+        // Filter expenses for current month
+        function getMonthExpenses(expenses) {
+            const { start, end } = getMonthBounds(currentDate);
+            return expenses.filter(exp => {
+                const expDate = new Date(exp.date);
+                return expDate >= start && expDate <= end;
+            });
+        }
+
+        function showNoDataMessage() {
+            if (pieChart) {
+                pieChart.destroy();
+                pieChart = null;
+            }
+            
+            const chartCanvas = document.getElementById('categoryPieChart');
+            const ctx = chartCanvas.getContext('2d');
+            ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+            
+            const legendContainer = document.getElementById('customLegend');
+            legendContainer.innerHTML = '<div class="no-data">No expenses recorded for this month</div>';
         }
 
         function formatCurrency(amount) {

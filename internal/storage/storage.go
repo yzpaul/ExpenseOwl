@@ -1,7 +1,14 @@
 package storage
 
 import (
+	"errors"
+
 	"github.com/tanq16/budgetlord/internal/models"
+)
+
+var (
+	ErrExpenseNotFound = errors.New("expense not found")
+	ErrInvalidExpense  = errors.New("invalid expense data")
 )
 
 type Storage interface {
