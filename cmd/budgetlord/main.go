@@ -26,6 +26,7 @@ var categories = []string{
 	"Rent",
 	"Utilities",
 	"Entertainment",
+	"Subscriptions",
 	"Healthcare",
 	"Shopping",
 	"Miscellaneous",
@@ -53,11 +54,13 @@ func runServer() {
 	http.HandleFunc("/manifest.json", handler.ServeManifest)
 	http.HandleFunc("/sw.js", handler.ServeServiceWorker)
 	http.HandleFunc("/pwa/", handler.ServePWAIcon)
+	http.HandleFunc("/style.css", handler.ServeCSS)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
 			return
 		}
+		w.Header().Set("Content-Type", "text/html")
 		if err := web.ServeTemplate(w, "index.html"); err != nil {
 			http.Error(w, "Failed to serve template", http.StatusInternalServerError)
 			return

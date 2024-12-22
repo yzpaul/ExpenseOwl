@@ -18,7 +18,6 @@ func ServeTemplate(w http.ResponseWriter, templateName string) error {
 		return err
 	}
 
-	w.Header().Set("Content-Type", "text/html")
 	_, err = w.Write(templateContent)
 	return err
 }

@@ -85,6 +85,7 @@ func (h *Handler) ServeTableView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Cpntent-Type", "text/html")
 	if err := web.ServeTemplate(w, "table.html"); err != nil {
 		http.Error(w, "Failed to serve template", http.StatusInternalServerError)
 		return
@@ -113,6 +114,14 @@ func (h *Handler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]string{"status": "success"})
+}
+
+func (h *Handler) ServeCSS(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/css")
+	if err := web.ServeTemplate(w, "style.css"); err != nil {
+		http.Error(w, "Failed to serve stylesheet", http.StatusInternalServerError)
+		return
+	}
 }
 
 // PWA handlers
