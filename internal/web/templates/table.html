@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
-    <title>BudgetLord - Monthly Expenses</title>
+    <title>ExpenseOwl Table</title>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1 align="center">BudgetLord</h1>
+            <h1 align="center">ExpenseOwl</h1>
             <div class="nav-bar">
                 <a href="/" class="view-button">Dashboard</a>
                 <a href="/table" class="view-button active">Table View</a>
@@ -21,6 +21,48 @@
             <button id="prevMonth" class="nav-button">← Previous</button>
             <div class="current-month" id="currentMonth"></div>
             <button id="nextMonth" class="nav-button">Next →</button>
+        </div>
+
+        <div class="form-container">
+            <form id="expenseForm" class="expense-form">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" value="unnamed" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" required>
+                        <option value="Food">Food</option>
+                        <option value="Groceries">Groceries</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Rent">Rent</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Subscriptions">Subscriptions</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Miscellaneous">Miscellaneous</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount">Amount ($)</label>
+                    <input type="number" id="amount" step="0.01" min="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" required>
+                    <script>
+                        // Set today's date as default
+                        document.getElementById('date').valueAsDate = new Date();
+                    </script>
+                </div>
+                
+                <button type="submit" class="nav-button">Add Expense</button>
+            </form>
+            <div id="formMessage" class="form-message"></div>
         </div>
 
         <div id="tableContainer">

@@ -1,13 +1,17 @@
 <p align="center">
-<img src="/assets/logo.png" alt="BudgetLord Logo" width="200" height="200" /><br>
-<h1 align="center">BudgetLord</h1><br>
+<img src="/assets/logo.png" alt="ExpenseOwl Logo" width="200" height="200" /><br>
+<h1 align="center">ExpenseOwl</h1><br>
 
 <p align="center">
-<a href="https://github.com/tanq16/budgetlord/actions/workflows/release.yml"><img src="https://github.com/tanq16/budgetlord/actions/workflows/release.yml/badge.svg" alt="Release Build"></a>&nbsp;<a href="https://github.com/Tanq16/BudgetLord/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/tanq16/budgetlord"></a>&nbsp;<a href="https://hub.docker.com/r/tanq16/budgetlord"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/tanq16/budgetlord"></a>
+<a href="https://github.com/tanq16/expenseowl/actions/workflows/release.yml"><img src="https://github.com/tanq16/expenseowl/actions/workflows/release.yml/badge.svg" alt="Release Build"></a>&nbsp;<a href="https://github.com/Tanq16/expenseowl/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/tanq16/expenseowl"></a>&nbsp;<a href="https://hub.docker.com/r/tanq16/expenseowl"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/tanq16/expenseowl"></a>
 </p>
 </p>
 
-BudgetLord is a lightweight, single-user expense tracking system that combines the simplicity of CLI-based input with web-based visualization. It helps track daily expenses, visualize monthly spending patterns, and maintain an overview of your financial habits through an elegant dark or light mode interface.
+`ExpenseOwl` is an extremely simple expense tracking system offering a modern interface with a monthly pie-chart visualization. It helps track daily expenses, visualize monthly spending patterns, and maintain an overview of your financial habits.
+
+# Why Create This?
+
+
 
 # Screenshots
 
@@ -54,9 +58,9 @@ Interactive data visualization via pie chart with three main aspects:
 
 ### Progressive Web App (PWA)
 
-BudgetLord can be installed as a Progressive Web App on desktop and mobile devices. To install:
+ExpenseOwl can be installed as a Progressive Web App on desktop and mobile devices. To install:
 
-1. Open BudgetLord in a supported browser
+1. Open expenseowl in a supported browser
 2. Look for the "Install" or "Add to Home Screen" option:
    - Desktop: Click the install icon in your browser's address bar
    - iOS: Use Safari's "Add to Home Screen" option in the share menu
@@ -68,29 +72,29 @@ BudgetLord can be installed as a Progressive Web App on desktop and mobile devic
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/tanq16/budgetlord.git
-cd budgetlord
+git clone https://github.com/tanq16/expenseowl.git
+cd expenseowl
 ```
 
 2. Build the binary:
 ```bash
-go build ./cmd/budgetlord
+go build ./cmd/expenseowl
 ```
 
 ### Docker Installation
 
 1. Pull the Docker image:
 ```bash
-docker pull tanq16/budgetlord:main
+docker pull tanq16/expenseowl:main
 ```
 
 2. Run with persistent storage:
 ```bash
 docker run -d \
-  --name budgetlord \
+  --name expenseowl \
   -p 8080:8080 \
-  -v budgetlord_data:/app/data \
-  tanq16/budgetlord:main
+  -v expenseowl_data:/app/data \
+  tanq16/expenseowl:main
 ```
 
 > [!WARNING]
@@ -105,15 +109,15 @@ The application can run in either server or client mode:
 #### Server Mode (Default)
 
 ```bash
-./budgetlord
+./expenseowl
 # or explicitly
-./budgetlord --serve
+./expenseowl --serve
 ```
 
 #### Client Mode
 
 ```bash
-./budgetlord --client --addr localhost:8080
+./expenseowl --client --addr localhost:8080
 ```
 
 In client mode, you'll be prompted to enter:

@@ -1,4 +1,4 @@
-module github.com/tanq16/budgetlord
+module github.com/tanq16/expenseowl
 
 go 1.23.2
 

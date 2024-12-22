@@ -6,9 +6,9 @@ import (
 	"path"
 	"time"
 
-	"github.com/tanq16/budgetlord/internal/models"
-	"github.com/tanq16/budgetlord/internal/storage"
-	"github.com/tanq16/budgetlord/internal/web"
+	"github.com/tanq16/expenseowl/internal/models"
+	"github.com/tanq16/expenseowl/internal/storage"
+	"github.com/tanq16/expenseowl/internal/web"
 )
 
 type Handler struct {
@@ -120,6 +120,14 @@ func (h *Handler) ServeCSS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/css")
 	if err := web.ServeTemplate(w, "style.css"); err != nil {
 		http.Error(w, "Failed to serve stylesheet", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *Handler) ServeFavicon(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "image/x-icon")
+	if err := web.ServeTemplate(w, "favicon.ico"); err != nil {
+		http.Error(w, "Failed to serve favicon", http.StatusInternalServerError)
 		return
 	}
 }

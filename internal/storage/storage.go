@@ -3,7 +3,7 @@ package storage
 import (
 	"errors"
 
-	"github.com/tanq16/budgetlord/internal/models"
+	"github.com/tanq16/expenseowl/internal/models"
 )
 
 var (

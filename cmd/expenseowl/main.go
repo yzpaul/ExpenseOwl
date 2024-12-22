@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tanq16/budgetlord/internal/api"
-	"github.com/tanq16/budgetlord/internal/config"
-	"github.com/tanq16/budgetlord/internal/storage/jsonfile"
-	"github.com/tanq16/budgetlord/internal/web"
+	"github.com/tanq16/expenseowl/internal/api"
+	"github.com/tanq16/expenseowl/internal/config"
+	"github.com/tanq16/expenseowl/internal/storage/jsonfile"
+	"github.com/tanq16/expenseowl/internal/web"
 )
 
 var categories = []string{
@@ -55,6 +55,7 @@ func runServer() {
 	http.HandleFunc("/sw.js", handler.ServeServiceWorker)
 	http.HandleFunc("/pwa/", handler.ServePWAIcon)
 	http.HandleFunc("/style.css", handler.ServeCSS)
+	http.HandleFunc("/favicon.ico", handler.ServeFavicon)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)

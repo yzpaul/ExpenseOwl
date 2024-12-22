@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/tanq16/budgetlord/internal/models"
+	"github.com/tanq16/expenseowl/internal/models"
 )
 
 type Storage struct {
