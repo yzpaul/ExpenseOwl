@@ -1,13 +1,23 @@
 <p align="center">
-<img src="/assets/logo.png" alt="ExpenseOwl Logo" width="225" height="225" /><br>
+<img src="/assets/logo.png" alt="ExpenseOwl Logo" width="250" height="250" /><br>
 <h1 align="center">ExpenseOwl</h1><br>
 
 <p align="center">
-<a href="https://github.com/tanq16/expenseowl/actions/workflows/release.yml"><img src="https://github.com/tanq16/expenseowl/actions/workflows/release.yml/badge.svg" alt="Release Build"></a>&nbsp;<a href="https://github.com/Tanq16/expenseowl/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/tanq16/expenseowl"></a>&nbsp;<a href="https://hub.docker.com/r/tanq16/expenseowl"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/tanq16/expenseowl"></a>
+<a href="https://github.com/tanq16/expenseowl/actions/workflows/release.yml"><img src="https://github.com/tanq16/expenseowl/actions/workflows/release.yml/badge.svg" alt="Release Build"></a>&nbsp;<a href="https://goreportcard.com/report/github.com/tanq16/expenseowl"><img src="https://goreportcard.com/badge/github.com/tanq16/expenseowl" alt="Go Report Card"></a><br>
+<a href="https://github.com/Tanq16/expenseowl/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/tanq16/expenseowl"></a>&nbsp;<a href="https://hub.docker.com/r/tanq16/expenseowl"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/tanq16/expenseowl"></a>
 </p>
 </p>
 
 `ExpenseOwl` is an extremely simple expense tracking system offering a modern interface with a monthly pie-chart visualization. It helps track daily expenses, visualize monthly spending patterns, and maintain an overview of your financial habits.
+
+---
+
+- [Why Create This](#why-create-this)
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Tech Stack](#technology-stack)
 
 # Why Create This?
 
@@ -30,9 +40,9 @@ Hence, I ended up creating this project, which I use to track my expenses. I als
 ### Visualization
 
 1. Dashboard with expense category breakdown (pie chart)
-  - Click on a category to exclude it from the graph, click again to reset
+    - Click on a category to exclude it from the graph, click again to reset
 2. Table view for detailed expense listing
-  - This is where you can delete individual expenses
+    - This is where you can delete individual expenses
 3. Month-by-month navigation
 
 ### Progressive Web App (PWA)
@@ -177,7 +187,7 @@ Get All Expenses:
 curl http://localhost:8080/expenses
 ```
 
-# Technical Stack
+# Technology Stack
 
 - Backend: Go
 - Storage: JSON file system
