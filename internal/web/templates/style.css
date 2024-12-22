@@ -415,8 +415,21 @@ header {
 }
 
 .form-message {
+    margin: 0;
+    padding: 0;
+    min-height: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.form-message:not(:empty) {
     margin-top: 1rem;
     padding: 0.5rem;
+    height: auto;
+    min-height: 2rem;
+    opacity: 1;
     border-radius: 4px;
     text-align: center;
 }
