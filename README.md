@@ -8,7 +8,7 @@
 </p>
 </p>
 
-`ExpenseOwl` is an extremely simple expense tracking system offering a modern interface with a monthly pie-chart visualization. It helps track daily expenses, visualize monthly spending patterns, and maintain an overview of your financial habits.
+`ExpenseOwl` is an extremely simple expense tracking system with a modern monthly pie-chart visualization. It tracks daily expenses, visualizes monthly spending patterns, and maintains an overview of financial habits.
 
 ---
 
@@ -21,28 +21,34 @@
 
 # Why Create This?
 
-There are a ton of amazing projects for expense tracking all across GitHub ([Actual](https://github.com/actualbudget/actual), [Firefly III](https://github.com/firefly-iii/firefly-iii), etc.). They're all great, but they aren't the *fastest* when trying to add expenses, and offer a ton of features which I don't use. Some of them also use varying formats of data or complex API. Don't get me wrong, they're great when they fit your needs, but I wanted something dead simple that just gives me a pie chart per month and a tabular representation. NOTHING else!
+There are a ton of amazing projects for expense tracking across GitHub ([Actual](https://github.com/actualbudget/actual), [Firefly III](https://github.com/firefly-iii/firefly-iii), etc.). They're all incredible, but they aren't the *fastest* when trying to add expenses, and offer a ton of features which I don't use. Some use varying formats of data or complex APIs. *Don't get me wrong*, they're great when needed, but I wanted something dead simple that just gives me a pie chart per month and a tabular representation. NOTHING else!
 
-Hence, I ended up creating this project, which I use to track my expenses. I also wanted data to be just JSON format, so I can do whatever I want with that, including a quick `jq` command to convert it to CSV. Also, the UI is mobile-friendly, so it works great for homelab use.
+Hence, I created this project, which I use in my homelab to track my expenses. The data is just JSON, so I can do whatever I want with that, including using `jq` to convert to CSV. The UI is elegant and mobile-friendly.
+
+The intention of this app is to track spending across your categories in a simplistic manner. No complicated searching, no editing - just add, delete, and view! This intention is not going to change throughout the lifecycle of this project. This is not an app for budgeting, it's for tracking.
 
 # Features
 
 ### Core Functionality
 
-- Simple expense tracking with essential details only
+- Simple expense tracking with essential details only (optional name, date without time, amount, and category)
 - UUID-based expense identification in the backend
-- Flat file storage system (default `data/expenses.json`)
-- Docker container with support for persistent storage
+- Flat file storage system (`data/expenses.json`)
+- Multi-architecture Docker container with support for persistent storage
 - REST API for expense management
 - Single-user focused (mainly for a homelab deployment)
 - CLI for both server and client (if needed) operations
+- Custom categories via environment variable (`EXPENSE_CATEGORIES`) with sensible defaults
 
 ### Visualization
 
 1. Dashboard with expense category breakdown (pie chart)
-    - Click on a category to exclude it from the graph, click again to reset
+    - Click on a category to exclude it from the graph, click again to add it back
+    - This helps visualize the breakdown without considering some categories like Rent
+    - The legend shows a total expenditure of the month along with a total without the "Rent" category
 2. Table view for detailed expense listing
-    - This is where you can delete individual expenses
+    - This is where you can view individual expenses chronologically and delete them
+    - You can use the browser's search to find a name if needed
 3. Month-by-month navigation
 
 ### Progressive Web App (PWA)
@@ -51,17 +57,17 @@ ExpenseOwl can be installed as a Progressive Web App on desktop and mobile devic
 
 - Desktop: Click the install icon in your browser's address bar
 - iOS: Use Safari's "Add to Home Screen" option in the share menu
-- Android: Use Chrome's "Add to Home Screen" option in the menu
+- Android: Use Chrome's "Install" option in the menu
 
 ### Intention of Use
 
-Just use this to add expenses quickly. It's been designed to help you do that. The default name for an expense is `unnamed` and the date is automatically set to current date. There's a set list of categories to choose from.
+Reiterating that you should use this to just add expenses quickly. The default name for an expense is `unnamed` and the date is automatically set to current date. There's a default list of categories to choose from, which can be edited very easily.
 
 In the ideal case, `enter the amount and choose category` - that's it!
 
 For a bit more involved case, `enter the amount and name, choose the category, and select the date` - still very simple!
 
-The application only allows addition and deletion, there's no need for editing. There are no tags, no wallet info, nothing. Once again, plain and simple is the main intention with this one.
+The application only allows addition and deletion, there's no need for editing. There are no tags, no wallet info, no budgeting, nothing! Plain and simple for the win.
 
 # Screenshots
 
@@ -73,19 +79,6 @@ The application only allows addition and deletion, there's no need for editing. 
 | Table Dark | <img src="/assets/table-dark.png" alt="Table Dark" /> | <img src="/assets/mobile-table-dark.png" alt="Mobile Table Dark" /> |
 
 The interface automatically adapts to system preferences for themes. The views have the following features:
-
-- **Dashboard View**:
-  - Interactive pie chart showing expense distribution
-  - Custom legend with percentage breakdowns
-  - Real-time category totals
-  - Seamless month-to-month navigation
-
-- **Table View**:
-  - Chronological expense listing
-  - Quick category reference
-  - Formatted currency display
-  - Responsive mobile design
-  - Expense deletion with confirmation
 
 # Installation
 
@@ -103,14 +96,12 @@ docker pull tanq16/expenseowl:main
 
 ```bash
 docker run -d \
-  --name expenseowl \
-  -p 8080:8080 \
-  -v expenseowl_data:/app/data \
-  tanq16/expenseowl:main
+--name expenseowl \
+-p 8080:8080 \
+-e EXPENSE_CATEGORIES="Rent,Food,Transport,Fun,Bills" \
+-v expenseowl_data:/app/data \
+tanq16/expenseowl:main # EXPENSE_CATEGORIES is an optional line
 ```
-
-> [!WARNING]
-> The image only builds for AMD64, so you should build it yourself for other architectures.
 
 To use it with Docker compose or a container-management system like Portainer or Dockge, use this YAML definition:
 
@@ -143,6 +134,9 @@ Ideally, once deployed, just use the web interface and you're good to go. Access
 
 - Dashboard: `http://localhost:8080/`
 - Table View: `http://localhost:8080/table`
+
+> [!NOTE]
+> This app has no authentication, so deploy carefully. It works very well with a reverse proxy like Nginx Proxy Manager and is mainly intended for homelab use.
 
 If there are command-line automations that are required for use with the REST API, read on!
 

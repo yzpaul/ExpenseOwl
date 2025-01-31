@@ -54,16 +54,7 @@
                 <div class="form-group">
                     <label for="category">Category</label>
                     <select id="category" required>
-                        <option value="Food">Food</option>
-                        <option value="Groceries">Groceries</option>
-                        <option value="Travel">Travel</option>
-                        <option value="Rent">Rent</option>
-                        <option value="Utilities">Utilities</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Subscriptions">Subscriptions</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Shopping">Shopping</option>
-                        <option value="Miscellaneous">Miscellaneous</option>
+                        <option value="">categories</option>
                     </select>
                 </div>
                 
@@ -77,7 +68,8 @@
                     <input type="date" id="date" required>
                     <script>
                         // Set today's date as default
-                        document.getElementById('date').valueAsDate = new Date();
+                        const now = new Date();
+                        document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                     </script>
                 </div>
                 
@@ -109,14 +101,12 @@
         function calculateCategoryBreakdown(expenses) {
             const categoryTotals = {};
             let totalAmount = 0;
-
             expenses.forEach(exp => {
                 if (!disabledCategories.has(exp.category)) {
                     categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
                     totalAmount += exp.amount;
                 }
             });
-
             return Object.entries(categoryTotals)
                 .map(([category, total]) => ({
                     category,
@@ -129,7 +119,6 @@
         function updateChartAndLegend() {
             const monthExpenses = getMonthExpenses(allExpenses);
             const categoryData = calculateCategoryBreakdown(monthExpenses);
-            
             if (categoryData.length === 0) {
                 showNoDataMessage();
             } else {
@@ -140,7 +129,6 @@
 
         function createPieChart(categoryData) {
             if (pieChart) pieChart.destroy();
-            
             pieChart = new Chart('categoryPieChart', {
                 type: 'doughnut',
                 data: {
@@ -177,11 +165,9 @@
         function updateLegend(categoryData) {
             const legendContainer = document.getElementById('customLegend');
             legendContainer.innerHTML = '<h2>Categories</h2>';
-            
             // Get unique categories from current month's expenses only
             const monthExpenses = getMonthExpenses(allExpenses);
             const currentMonthCategories = [...new Set(monthExpenses.map(exp => exp.category))];
-            
             // Create a map of active category data for easy lookup
             const categoryMap = new Map(categoryData.map(cat => [cat.category, cat]));
             
@@ -195,13 +181,10 @@
             }).forEach(category => {
                 const item = document.createElement('div');
                 item.className = `legend-item${disabledCategories.has(category) ? ' disabled' : ''}`;
-                
                 const color = categoryColors[category];
                 const categoryData = categoryMap.get(category);
-                
                 const percentage = categoryData ? ` (${categoryData.percentage.toFixed(1)}%)` : '';
                 const amount = categoryData ? formatCurrency(categoryData.total) : '';
-                
                 item.innerHTML = `
                     <div class="color-box" style="background-color: ${color}"></div>
                     <div class="legend-text">
@@ -209,7 +192,6 @@
                         <span class="amount">${amount}</span>
                     </div>
                 `;
-                
                 item.addEventListener('click', () => toggleCategory(category));
                 legendContainer.appendChild(item);
             });
@@ -246,14 +228,21 @@
 
         async function initialize() {
             try {
+                // Fetch categories first
+                const categoriesResponse = await fetch('/categories');
+                if (!categoriesResponse.ok) throw new Error('Failed to fetch categories');
+                const categories = await categoriesResponse.json();
+                const categorySelect = document.getElementById('category');
+                categorySelect.innerHTML = categories.map(cat => 
+                    `<option value="${cat}">${cat}</option>`
+                ).join('');
+                // Fetch expenses
                 const response = await fetch('/expenses');
                 if (!response.ok) throw new Error('Failed to fetch data');
                 allExpenses = await response.json();
-                
                 // Get unique categories and assign colors
                 const uniqueCategories = [...new Set(allExpenses.map(exp => exp.category))];
                 assignCategoryColors(uniqueCategories);
-                
                 updateMonthDisplay();
                 updateChartAndLegend();
             } catch (error) {
@@ -264,7 +253,6 @@
         Chart.defaults.color = '#b3b3b3';
         Chart.defaults.borderColor = '#606060';
         Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        
         // Format month for display
         function formatMonth(date) {
             return date.toLocaleDateString('en-US', { 
@@ -272,24 +260,20 @@
                 month: 'long'
             });
         }
-
         // Update month display and navigation buttons
         function updateMonthDisplay() {
             document.getElementById('currentMonth').textContent = formatMonth(currentDate);
-            
             // Disable next month button if current month is reached
             const now = new Date();
             const isCurrentMonth = currentDate.getMonth() === now.getMonth() && currentDate.getFullYear() === now.getFullYear();
             document.getElementById('nextMonth').disabled = isCurrentMonth;
         }
-
         // Get start and end of month
         function getMonthBounds(date) {
             const start = new Date(date.getFullYear(), date.getMonth(), 1);
             const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
             return { start, end };
         }
-
         // Filter expenses for current month
         function getMonthExpenses(expenses) {
             const { start, end } = getMonthBounds(currentDate);
@@ -298,17 +282,14 @@
                 return expDate >= start && expDate <= end;
             });
         }
-
         function showNoDataMessage() {
             if (pieChart) {
                 pieChart.destroy();
                 pieChart = null;
             }
-            
             const chartCanvas = document.getElementById('categoryPieChart');
             const ctx = chartCanvas.getContext('2d');
             ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-            
             const legendContainer = document.getElementById('customLegend');
             legendContainer.innerHTML = '<div class="no-data">No expenses recorded for this month</div>';
         }
@@ -327,23 +308,29 @@
             updateMonthDisplay();
             updateChartAndLegend();
         });
-
         document.getElementById('nextMonth').addEventListener('click', () => {
             currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);
             updateMonthDisplay();
             updateChartAndLegend();
         });
-
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+            const selectedDate = new Date(document.getElementById('date').value);
+            const now = new Date();
+            const expenseDate = new Date(
+                selectedDate.getFullYear(),
+                selectedDate.getMonth(),
+                selectedDate.getDate(),
+                now.getHours(),
+                now.getMinutes(),
+                now.getSeconds()
+            );
             const formData = {
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
                 amount: parseFloat(document.getElementById('amount').value),
-                date: new Date(document.getElementById('date').value + 'T14:00:00Z').toISOString()
+                date: expenseDate.toISOString()
             };
-
             try {
                 const response = await fetch('/expense', {
                     method: 'PUT',
@@ -352,15 +339,14 @@
                     },
                     body: JSON.stringify(formData)
                 });
-
                 const messageDiv = document.getElementById('formMessage');
                 if (response.ok) {
                     messageDiv.textContent = 'Expense added successfully!';
                     messageDiv.className = 'form-message success';
                     document.getElementById('expenseForm').reset();
-                    document.getElementById('date').valueAsDate = new Date();
+                    const now = new Date();
+                    document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                     document.getElementById('name').value = 'unnamed';
-                    
                     // Refresh the data
                     await initialize();
                 } else {
@@ -368,7 +354,6 @@
                     messageDiv.textContent = `Error: ${error.error || 'Failed to add expense'}`;
                     messageDiv.className = 'form-message error';
                 }
-
                 // Clear message after 3 seconds
                 setTimeout(() => {
                     messageDiv.textContent = '';
@@ -381,7 +366,6 @@
                 messageDiv.className = 'form-message error';
             }
         });
-
         document.addEventListener('DOMContentLoaded', initialize);
     </script>
 </body>

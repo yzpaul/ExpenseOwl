@@ -33,16 +33,7 @@
                 <div class="form-group">
                     <label for="category">Category</label>
                     <select id="category" required>
-                        <option value="Food">Food</option>
-                        <option value="Groceries">Groceries</option>
-                        <option value="Travel">Travel</option>
-                        <option value="Rent">Rent</option>
-                        <option value="Utilities">Utilities</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Subscriptions">Subscriptions</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Shopping">Shopping</option>
-                        <option value="Miscellaneous">Miscellaneous</option>
+                        <option value="">categories</option>
                     </select>
                 </div>
                 
@@ -56,7 +47,8 @@
                     <input type="date" id="date" required>
                     <script>
                         // Set today's date as default
-                        document.getElementById('date').valueAsDate = new Date();
+                        const now = new Date();
+                        document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                     </script>
                 </div>
                 
@@ -92,7 +84,6 @@
                 month: 'long'
             });
         }
-
         function formatDate(dateString) {
             return new Date(dateString).toLocaleDateString('en-US', {
                 month: 'short',
@@ -100,7 +91,6 @@
                 year: 'numeric'
             });
         }
-
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
@@ -108,7 +98,6 @@
                 minimumFractionDigits: 2
             }).format(amount);
         }
-
         function updateMonthDisplay() {
             document.getElementById('currentMonth').textContent = formatMonth(currentDate);
             
@@ -117,13 +106,11 @@
                                && currentDate.getFullYear() === now.getFullYear();
             document.getElementById('nextMonth').disabled = isCurrentMonth;
         }
-
         function getMonthBounds(date) {
             const start = new Date(date.getFullYear(), date.getMonth(), 1);
             const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
             return { start, end };
         }
-
         function getMonthExpenses(expenses) {
             const { start, end } = getMonthBounds(currentDate);
             return expenses.filter(exp => {
@@ -136,7 +123,6 @@
             if (expenses.length === 0) {
                 return `<div class="no-data">No expenses recorded for this month</div>`;
             }
-
             return `
                 <table class="expense-table">
                     <thead>
@@ -175,14 +161,21 @@
 
         async function initialize() {
             try {
+                // Fetch categories first
+                const categoriesResponse = await fetch('/categories');
+                if (!categoriesResponse.ok) throw new Error('Failed to fetch categories');
+                const categories = await categoriesResponse.json();
+                const categorySelect = document.getElementById('category');
+                categorySelect.innerHTML = categories.map(cat => 
+                    `<option value="${cat}">${cat}</option>`
+                ).join('');
                 const response = await fetch('/expenses');
                 if (!response.ok) throw new Error('Failed to fetch data');
                 allExpenses = await response.json();
-                
                 updateMonthDisplay();
                 updateTable();
             } catch (error) {
-                console.error('Failed to initialize dashboard:', error);
+                console.error('Failed to initialize table:', error);
                 document.getElementById('tableContainer').innerHTML = 
                     '<div class="no-data">Failed to load expenses</div>';
             }
@@ -214,16 +207,13 @@
 
         async function confirmDelete() {
             if (!expenseToDelete) return;
-
             try {
                 const response = await fetch(`/expense/delete?id=${expenseToDelete}`, {
                     method: 'DELETE'
                 });
-
                 if (!response.ok) {
                     throw new Error('Failed to delete expense');
                 }
-
                 // Refresh the expenses data
                 await initialize();
                 closeDeleteModal();
@@ -241,14 +231,22 @@
 
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+            const selectedDate = new Date(document.getElementById('date').value);
+            const now = new Date();
+            const expenseDate = new Date(
+                selectedDate.getFullYear(),
+                selectedDate.getMonth(),
+                selectedDate.getDate(),
+                now.getHours(),
+                now.getMinutes(),
+                now.getSeconds()
+            );
             const formData = {
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
                 amount: parseFloat(document.getElementById('amount').value),
-                date: new Date(document.getElementById('date').value + 'T14:00:00Z').toISOString()
+                date: expenseDate.toISOString()
             };
-
             try {
                 const response = await fetch('/expense', {
                     method: 'PUT',
@@ -257,15 +255,14 @@
                     },
                     body: JSON.stringify(formData)
                 });
-
                 const messageDiv = document.getElementById('formMessage');
                 if (response.ok) {
                     messageDiv.textContent = 'Expense added successfully!';
                     messageDiv.className = 'form-message success';
                     document.getElementById('expenseForm').reset();
-                    document.getElementById('date').valueAsDate = new Date();
+                    const now = new Date();
+                    document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                     document.getElementById('name').value = 'unnamed';
-                    
                     // Refresh the data
                     await initialize();
                 } else {
@@ -273,7 +270,6 @@
                     messageDiv.textContent = `Error: ${error.error || 'Failed to add expense'}`;
                     messageDiv.className = 'form-message error';
                 }
-
                 // Clear message after 3 seconds
                 setTimeout(() => {
                     messageDiv.textContent = '';
@@ -286,7 +282,6 @@
                 messageDiv.className = 'form-message error';
             }
         });
-
         document.addEventListener('DOMContentLoaded', initialize);
     </script>
 </body>

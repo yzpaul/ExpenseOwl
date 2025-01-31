@@ -34,19 +34,17 @@ var categories = []string{
 
 func runServer() {
 	cfg := config.NewConfig()
-
 	dataDir := "./data"
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		log.Fatalf("Failed to create data directory: %v", err)
 	}
-
 	storage, err := jsonfile.New(dataDir + "/expenses.json")
 	if err != nil {
 		log.Fatalf("Failed to initialize storage: %v", err)
 	}
 
-	handler := api.NewHandler(storage)
-
+	handler := api.NewHandler(storage, cfg)
+	http.HandleFunc("/categories", handler.GetCategories)
 	http.HandleFunc("/expense", handler.AddExpense)
 	http.HandleFunc("/expenses", handler.GetExpenses)
 	http.HandleFunc("/table", handler.ServeTableView)
@@ -67,7 +65,6 @@ func runServer() {
 			return
 		}
 	})
-
 	log.Printf("Starting server on port %s...", cfg.ServerPort)
 	if err := http.ListenAndServe(":"+cfg.ServerPort, nil); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
@@ -92,7 +89,6 @@ func getCategory() string {
 	for i, category := range categories {
 		fmt.Printf("%d. %s\n", i+1, category)
 	}
-
 	for {
 		fmt.Print("\nSelect category (1-8): ")
 		reader := bufio.NewReader(os.Stdin)
@@ -122,20 +118,17 @@ func getDate() time.Time {
 	fmt.Print("Enter date (YYYY-MM-DD, press Enter for today): ")
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
-
 	if input == "" {
 		return time.Now()
 	}
-
-	// Parse the input date and set it to 2 PM in the current timezone
+	currTime := time.Now()
 	if date, err := time.ParseInLocation("2006-01-02", input, time.Local); err == nil {
 		return time.Date(
 			date.Year(), date.Month(), date.Day(),
-			14, 0, 0, 0,
+			currTime.Hour(), currTime.Minute(), currTime.Second(), currTime.Nanosecond(),
 			time.Local,
 		)
 	}
-
 	fmt.Println("Invalid date format, using current time.")
 	return time.Now()
 }
@@ -145,7 +138,6 @@ func runClient(serverAddr string) {
 	category := getCategory()
 	amount := getAmount()
 	date := getDate()
-
 	expense := api.ExpenseRequest{
 		Name:     name,
 		Category: category,
@@ -157,7 +149,6 @@ func runClient(serverAddr string) {
 	if err != nil {
 		log.Fatalf("Failed to marshal expense data: %v", err)
 	}
-
 	url := fmt.Sprintf("http://%s/expense", serverAddr)
 	resp, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -171,11 +162,9 @@ func runClient(serverAddr string) {
 		log.Fatalf("Failed to send request: %v", err)
 	}
 	defer response.Body.Close()
-
 	if response.StatusCode != http.StatusOK {
 		log.Fatalf("Server returned error: %s", response.Status)
 	}
-
 	fmt.Println("Expense added successfully!")
 }
 
@@ -183,9 +172,7 @@ func main() {
 	isServer := flag.Bool("serve", true, "Run as server (default true)")
 	isClient := flag.Bool("client", false, "Run as client")
 	serverAddr := flag.String("addr", "localhost:8080", "Server address (for client mode)")
-
 	flag.Parse()
-
 	// If both flags are provided, prefer client mode
 	if *isClient {
 		runClient(*serverAddr)
