@@ -53,6 +53,9 @@ func (h *Handler) AddExpense(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
 		return
 	}
+	if !req.Date.IsZero() {
+		req.Date = req.Date.UTC()
+	}
 	expense := &models.Expense{
 		Name:     req.Name,
 		Category: req.Category,

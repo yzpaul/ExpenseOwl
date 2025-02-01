@@ -81,15 +81,21 @@
         function formatMonth(date) {
             return date.toLocaleDateString('en-US', { 
                 year: 'numeric',
-                month: 'long'
+                month: 'long',
+                timeZone: getUserTimeZone()
             });
         }
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-            });
+        function getISODateWithLocalTime(dateInput) {
+            const [year, month, day] = dateInput.split('-').map(Number);
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            const localDateTime = new Date(year, month - 1, day, hours, minutes, seconds);
+            return localDateTime.toISOString();
+        }
+        function getUserTimeZone() {
+            return Intl.DateTimeFormat().resolvedOptions().timeZone;
         }
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-US', {
@@ -98,17 +104,30 @@
                 minimumFractionDigits: 2
             }).format(amount);
         }
+        function formatDateFromUTC(utcDateString) {
+            const date = new Date(utcDateString);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZoneName: 'short'
+            });
+        }
+
         function updateMonthDisplay() {
             document.getElementById('currentMonth').textContent = formatMonth(currentDate);
-            
             const now = new Date();
-            const isCurrentMonth = currentDate.getMonth() === now.getMonth() 
-                               && currentDate.getFullYear() === now.getFullYear();
+            const isCurrentMonth = currentDate.getMonth() === now.getMonth() && currentDate.getFullYear() === now.getFullYear();
             document.getElementById('nextMonth').disabled = isCurrentMonth;
         }
         function getMonthBounds(date) {
-            const start = new Date(date.getFullYear(), date.getMonth(), 1);
-            const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
+            const localDate = new Date(date);
+            const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), 1);
+            const endLocal = new Date(localDate.getFullYear(), localDate.getMonth() + 1, 0, 23, 59, 59, 999);
+            const start = new Date(startLocal.toISOString());
+            const end = new Date(endLocal.toISOString());
             return { start, end };
         }
         function getMonthExpenses(expenses) {
@@ -140,7 +159,7 @@
                                 <td>${expense.name}</td>
                                 <td>${expense.category}</td>
                                 <td class="amount">${formatCurrency(expense.amount)}</td>
-                                <td class="date-column">${formatDate(expense.date)}</td>
+                                <td class="date-column">${formatDateFromUTC(expense.date)}</td>
                                 <td>
                                     <button class="delete-button" onclick="showDeleteModal('${expense.id}')">
                                         <i class="fa-solid fa-trash-can"></i>
@@ -182,13 +201,24 @@
         }
 
         document.getElementById('prevMonth').addEventListener('click', () => {
-            currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
+            currentDate = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth() - 1,
+                1,
+                currentDate.getHours(),
+                currentDate.getMinutes()
+            );
             updateMonthDisplay();
             updateTable();
         });
-
         document.getElementById('nextMonth').addEventListener('click', () => {
-            currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);
+            currentDate = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth() + 1,
+                1,
+                currentDate.getHours(),
+                currentDate.getMinutes()
+            );
             updateMonthDisplay();
             updateTable();
         });
@@ -231,21 +261,11 @@
 
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const selectedDate = new Date(document.getElementById('date').value);
-            const now = new Date();
-            const expenseDate = new Date(
-                selectedDate.getFullYear(),
-                selectedDate.getMonth(),
-                selectedDate.getDate(),
-                now.getHours(),
-                now.getMinutes(),
-                now.getSeconds()
-            );
             const formData = {
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
                 amount: parseFloat(document.getElementById('amount').value),
-                date: expenseDate.toISOString()
+                date: getISODateWithLocalTime(document.getElementById('date').value)
             };
             try {
                 const response = await fetch('/expense', {
