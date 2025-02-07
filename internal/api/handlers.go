@@ -35,12 +35,21 @@ type ExpenseRequest struct {
 	Date     time.Time `json:"date"`
 }
 
+type ConfigResponse struct {
+	Categories []string `json:"categories"`
+	Currency   string   `json:"currency"`
+}
+
 func (h *Handler) GetCategories(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	writeJSON(w, http.StatusOK, h.config.Categories)
+	response := ConfigResponse{
+		Categories: h.config.Categories,
+		Currency:   h.config.Currency,
+	}
+	writeJSON(w, http.StatusOK, response)
 }
 
 func (h *Handler) AddExpense(w http.ResponseWriter, r *http.Request) {

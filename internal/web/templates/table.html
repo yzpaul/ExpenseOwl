@@ -38,7 +38,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="amount">Amount ($)</label>
+                    <label for="amount">Amount</label>
                     <input type="number" id="amount" step="0.01" min="0.01" required>
                 </div>
                 
@@ -75,8 +75,19 @@
     </div>
 
     <script>
+        let currencySymbol = '$'; // Default to USD
         let currentDate = new Date();
         let allExpenses = [];
+
+        function formatCurrency(amount) {
+            let formattedAmount = new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount);
+            // Currencies commonly used after the amount
+            const postfixCurrencies = new Set(['kr', 'kr.', 'Fr', 'zł']);
+            if (postfixCurrencies.has(currencySymbol)) {
+                return `${formattedAmount} ${currencySymbol}`;
+            }
+            return `${currencySymbol}${formattedAmount}`;
+        }
 
         function formatMonth(date) {
             return date.toLocaleDateString('en-US', { 
@@ -96,13 +107,6 @@
         }
         function getUserTimeZone() {
             return Intl.DateTimeFormat().resolvedOptions().timeZone;
-        }
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 2
-            }).format(amount);
         }
         function formatDateFromUTC(utcDateString) {
             const date = new Date(utcDateString);
@@ -180,14 +184,15 @@
 
         async function initialize() {
             try {
-                // Fetch categories first
-                const categoriesResponse = await fetch('/categories');
-                if (!categoriesResponse.ok) throw new Error('Failed to fetch categories');
-                const categories = await categoriesResponse.json();
+                // Fetch config response
+                const configResponse = await fetch('/categories');
+                if (!configResponse.ok) throw new Error('Failed to fetch configuration');
+                const config = await configResponse.json();
                 const categorySelect = document.getElementById('category');
-                categorySelect.innerHTML = categories.map(cat => 
+                categorySelect.innerHTML = config.categories.map(cat => 
                     `<option value="${cat}">${cat}</option>`
                 ).join('');
+                currencySymbol = config.currency;
                 const response = await fetch('/expenses');
                 if (!response.ok) throw new Error('Failed to fetch data');
                 allExpenses = await response.json();

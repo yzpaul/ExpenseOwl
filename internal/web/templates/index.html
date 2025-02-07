@@ -80,6 +80,7 @@
         </div>
     </div>
     <script>
+        let currencySymbol = '$'; // Default to USD
         let pieChart = null;
         let currentDate = new Date();
         let allExpenses = [];
@@ -96,6 +97,16 @@
                     categoryColors[category] = colorPalette[index % colorPalette.length];
                 }
             });
+        }
+
+        function formatCurrency(amount) {
+            let formattedAmount = new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount);
+            // Currencies commonly used after the amount
+            const postfixCurrencies = new Set(['kr', 'kr.', 'Fr', 'zł']);
+            if (postfixCurrencies.has(currencySymbol)) {
+                return `${formattedAmount} ${currencySymbol}`;
+            }
+            return `${currencySymbol}${formattedAmount}`;
         }
 
         function calculateCategoryBreakdown(expenses) {
@@ -228,14 +239,15 @@
 
         async function initialize() {
             try {
-                // Fetch categories first
-                const categoriesResponse = await fetch('/categories');
-                if (!categoriesResponse.ok) throw new Error('Failed to fetch categories');
-                const categories = await categoriesResponse.json();
+                // Fetch config response
+                const configResponse = await fetch('/categories');
+                if (!configResponse.ok) throw new Error('Failed to fetch configuration');
+                const config = await configResponse.json();
                 const categorySelect = document.getElementById('category');
-                categorySelect.innerHTML = categories.map(cat => 
+                categorySelect.innerHTML = config.categories.map(cat => 
                     `<option value="${cat}">${cat}</option>`
                 ).join('');
+                currencySymbol = config.currency;
                 // Fetch expenses
                 const response = await fetch('/expenses');
                 if (!response.ok) throw new Error('Failed to fetch data');
@@ -309,14 +321,6 @@
             ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
             const legendContainer = document.getElementById('customLegend');
             legendContainer.innerHTML = '<div class="no-data">No expenses recorded for this month</div>';
-        }
-
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 2
-            }).format(amount);
         }
 
         // Event Listeners
