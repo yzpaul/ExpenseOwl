@@ -39,6 +39,7 @@ The intention of this app is to track spending across your categories in a simpl
 - Single-user focused (mainly for a homelab deployment)
 - CLI for both server and client (if needed) operations
 - Custom categories via environment variable (`EXPENSE_CATEGORIES`) with sensible defaults
+- Custom currency symbol in the frontend via environment variable (`CURRENCY`)
 
 ### Visualization
 
@@ -99,8 +100,9 @@ docker run -d \
 --name expenseowl \
 -p 8080:8080 \
 -e EXPENSE_CATEGORIES="Rent,Food,Transport,Fun,Bills" \
+-e CURRENCY=jpy \
 -v expenseowl_data:/app/data \
-tanq16/expenseowl:main # EXPENSE_CATEGORIES is an optional line
+tanq16/expenseowl:main # EXPENSE_CATEGORIES, CURRENCY are optional configs
 ```
 
 To use it with Docker compose or a container-management system like Portainer or Dockge, use this YAML definition:
@@ -180,6 +182,28 @@ Get All Expenses:
 ```bash
 curl http://localhost:8080/expenses
 ```
+
+### Config Options
+
+##### Currency Settings
+
+ExpenseOwl supports multiple currencies through the CURRENCY environment variable. If not specified, it defaults to USD ($). Example, to run with Euro, use the following environment variable:
+
+```bash
+CURRENCY=eur ./expenseowl
+```
+
+Similarly, the environment variable can be set in a compose stack or using `-e` in the command line with a Docker command. The full list of currencies supported are present in [this file](https://github.com/Tanq16/ExpenseOwl/blob/main/internal/config/config.go#L27).
+
+##### Category Settings
+
+ExpenseOwl also supports custom categories, which can be specified through environment variables like so:
+
+```bash
+EXPENSE_CATEGORIES="Rent,Food,Transport,Fun,Bills" ./expenseowl
+```
+
+Similarly, it can be specified in a Docker compose stack of a Docker CLI command with the `-e` flag. Refer to the examples shown above in the README.
 
 # Technology Stack
 
