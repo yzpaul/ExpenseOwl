@@ -36,6 +36,7 @@ func runServer(dataPath string) {
 	http.HandleFunc("/expenses", handler.GetExpenses)
 	http.HandleFunc("/table", handler.ServeTableView)
 	http.HandleFunc("/expense/delete", handler.DeleteExpense)
+	http.HandleFunc("/export", handler.ExportCSV)
 	http.HandleFunc("/manifest.json", handler.ServeManifest)
 	http.HandleFunc("/sw.js", handler.ServeServiceWorker)
 	http.HandleFunc("/pwa/", handler.ServePWAIcon)

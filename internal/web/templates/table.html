@@ -12,15 +12,22 @@
         <header>
             <h1 align="center">ExpenseOwl</h1>
             <div class="nav-bar">
-                <a href="/" class="view-button">Dashboard</a>
-                <a href="/table" class="view-button active">Table View</a>
+                <a href="/" class="view-button" data-tooltip="Dashboard">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </a>
+                <a href="/table" class="view-button active" data-tooltip="Table View">
+                    <i class="fa-solid fa-table"></i>
+                </a>
+                <a href="/export" class="view-button" download="expenses.csv" data-tooltip="All expenses to CSV">
+                    <i class="fa-solid fa-file-csv"></i>
+                </a>
             </div>
         </header>
 
         <div class="month-navigation">
-            <button id="prevMonth" class="nav-button">← Previous</button>
+            <button id="prevMonth" class="nav-button"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="current-month" id="currentMonth"></div>
-            <button id="nextMonth" class="nav-button">Next →</button>
+            <button id="nextMonth" class="nav-button"><i class="fa-solid fa-arrow-right"></i></button>
         </div>
 
         <div class="form-container">

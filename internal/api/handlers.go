@@ -2,8 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/tanq16/expenseowl/internal/config"
@@ -167,6 +169,33 @@ func (h *Handler) ServePWAIcon(w http.ResponseWriter, r *http.Request) {
 	if err := web.ServeTemplate(w, "pwa/"+iconName); err != nil {
 		http.Error(w, "Failed to serve icon", http.StatusInternalServerError)
 		return
+	}
+}
+
+// ExportCSV handler
+func (h *Handler) ExportCSV(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	expenses, err := h.storage.GetAllExpenses()
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Failed to retrieve expenses"})
+		return
+	}
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=expenses.csv")
+	// write CSV data
+	w.Write([]byte("ID,Name,Category,Amount,Date\n"))
+	for _, expense := range expenses {
+		line := fmt.Sprintf("%s,%s,%s,%.2f,%s\n",
+			expense.ID,
+			strings.ReplaceAll(expense.Name, ",", ";"), // Replace , in name with ;
+			expense.Category,
+			expense.Amount,
+			expense.Date.Format("2006-01-02 15:04:05"),
+		)
+		w.Write([]byte(line))
 	}
 }
 

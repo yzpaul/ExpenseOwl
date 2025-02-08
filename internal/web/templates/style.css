@@ -199,6 +199,36 @@ header {
     cursor: default;
 }
 
+.view-button {
+    position: relative;
+}
+
+.view-button[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    z-index: 10;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    opacity: 0;
+    animation: tooltip-appear 0.1s ease forwards;
+}
+
+@keyframes tooltip-appear {
+    to {
+        opacity: 1;
+    }
+}
+
 /* Table styles */
 .expense-table {
     width: 100%;
