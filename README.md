@@ -54,7 +54,7 @@ The intention of this app is to track spending across your categories in a simpl
 
 ### Progressive Web App (PWA)
 
-ExpenseOwl can be installed as a Progressive Web App on desktop and mobile devices. To install:
+The frontend of ExpenseOwl can be installed as a Progressive Web App on desktop and mobile devices. To install:
 
 - Desktop: Click the install icon in your browser's address bar
 - iOS: Use Safari's "Add to Home Screen" option in the share menu
