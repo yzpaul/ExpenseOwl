@@ -38,6 +38,7 @@ This app's intention is to track spending across your categories in a simplistic
 - Multi-architecture Docker container with support for persistent storage
 - REST API for expense management
 - Single-user focused (mainly for a home lab deployment)
+- CSV export of all expense data from the UI
 - CLI for both server and client (if needed) operations
 - Custom categories via environment variable (`EXPENSE_CATEGORIES`) with sensible defaults
 - Custom currency symbol in the frontend via environment variable (`CURRENCY`)
@@ -75,10 +76,10 @@ The application only allows addition and deletion; there's no need for editing. 
 
 | | Desktop View | Mobile View |
 | --- | --- | --- |
-| Dashboard Light | <img src="/assets/dashboard-light.png" alt="Dashboard Light" /> | <img src="/assets/mobile-dashboard-light.png" alt="Mobile Dashboard Light" /> |
-| Dashboard Dark | <img src="/assets/dashboard-dark.png" alt="Dashboard Dark" /> | <img src="/assets/mobile-dashboard-dark.png" alt="Mobile Dashboard Dark" /> |
-| Table Light | <img src="/assets/table-light.png" alt="Table Light" /> | <img src="/assets/mobile-table-light.png" alt="Mobile Table Light" /> |
-| Table Dark | <img src="/assets/table-dark.png" alt="Table Dark" /> | <img src="/assets/mobile-table-dark.png" alt="Mobile Table Dark" /> |
+| Dashboard Light | <img src="/assets/dashboard-desktop-light.png" alt="Dashboard Light" /> | <img src="/assets/dashboard-mobile-light.png" alt="Mobile Dashboard Light" /> |
+| Dashboard Dark | <img src="/assets/dashboard-desktop-dark.png" alt="Dashboard Dark" /> | <img src="/assets/dashboard-mobile-dark.png" alt="Mobile Dashboard Dark" /> |
+| Table Light | <img src="/assets/table-desktop-light.png" alt="Table Light" /> | <img src="/assets/table-mobile-light.png" alt="Mobile Table Light" /> |
+| Table Dark | <img src="/assets/table-desktop-dark.png" alt="Table Dark" /> | <img src="/assets/table-mobile-dark.png" alt="Mobile Table Dark" /> |
 
 The interface automatically adapts to system preferences for themes.
 
@@ -152,13 +153,15 @@ Server Mode (Default):
 ```bash
 ./expenseowl
 # or explicitly
-./expenseowl --serve
+./expenseowl -serve
+# or from a custom directory
+./expenseowl -data /custom/path
 ```
 
 Client Mode:
 
 ```bash
-./expenseowl --client --addr localhost:8080
+./expenseowl -client -addr localhost:8080
 ```
 
 In client mode, you'll be prompted to enter the expense name, category (select from a list), amount, and date (in YYYY-MM-DD; optional, sets to the current date when not provided).
