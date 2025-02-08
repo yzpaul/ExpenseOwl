@@ -20,8 +20,8 @@ import (
 	"github.com/tanq16/expenseowl/internal/web"
 )
 
-func runServer() {
-	cfg := config.NewConfig()
+func runServer(dataPath string) {
+	cfg := config.NewConfig(dataPath)
 	if err := os.MkdirAll(cfg.StoragePath, 0755); err != nil {
 		log.Fatalf("Failed to create data directory: %v", err)
 	}
@@ -120,7 +120,7 @@ func getDate() time.Time {
 }
 
 func runClient(serverAddr string) {
-	cfg := config.NewConfig()
+	cfg := config.NewConfig("data") // Default data path hardcoded for client
 	name := readNonEmptyInput("Enter expense name: ")
 	category := getCategory(cfg)
 	amount := getAmount()
@@ -159,11 +159,12 @@ func main() {
 	isServer := flag.Bool("serve", true, "Run as server (default true)")
 	isClient := flag.Bool("client", false, "Run as client")
 	serverAddr := flag.String("addr", "localhost:8080", "Server address (for client mode)")
+	dataPath := flag.String("data", "data", "Path to data directory")
 	flag.Parse()
 	// If both flags are provided, prefer client mode
 	if *isClient {
 		runClient(*serverAddr)
 	} else if *isServer {
-		runServer()
+		runServer(*dataPath)
 	}
 }
