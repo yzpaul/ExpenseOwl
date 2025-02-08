@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -22,7 +23,7 @@ type fileData struct {
 
 func New(filePath string) (*Storage, error) {
 	// Create storage directory if it doesn't exist
-	dir := filePath[:len(filePath)-len("/expenses.json")]
+	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create storage directory: %v", err)
 	}

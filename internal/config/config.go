@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -71,7 +72,7 @@ func NewConfig() *Config {
 	}
 	return &Config{
 		ServerPort:  "8080",
-		StoragePath: "./data",
+		StoragePath: filepath.Join(".", "data"),
 		Categories:  categories,
 		Currency:    currency,
 	}
