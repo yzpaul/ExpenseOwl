@@ -79,7 +79,7 @@ The application only allows addition and deletion, there's no need for editing. 
 | Table Light | <img src="/assets/table-light.png" alt="Table Light" /> | <img src="/assets/mobile-table-light.png" alt="Mobile Table Light" /> |
 | Table Dark | <img src="/assets/table-dark.png" alt="Table Dark" /> | <img src="/assets/mobile-table-dark.png" alt="Mobile Table Dark" /> |
 
-The interface automatically adapts to system preferences for themes. The views have the following features:
+The interface automatically adapts to system preferences for themes.
 
 # Installation
 
