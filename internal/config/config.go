@@ -22,7 +22,7 @@ var defaultCategories = []string{
 	"Entertainment",
 	"Healthcare",
 	"Shopping",
-	"Other",
+	"Miscellaneous",
 }
 
 var currencySymbols = map[string]string{

@@ -64,7 +64,7 @@ for month in {0..11}; do
                 amount=$(random_amount 40 250)
                 name="General shopping"
                 ;;
-            "Other")
+            "Miscellaneous")
                 amount=$(random_amount 20 100)
                 name="Misc expense"
                 ;;
