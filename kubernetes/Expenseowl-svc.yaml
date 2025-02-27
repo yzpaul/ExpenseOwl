@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: svc-app
+  name: expenseowl-svc
   namespace: expensetracker
 spec:
   selector:
-    app: myapp-app
+    app: expenseowl
   ports:
-  - port: 8085
-    targetPort: 8085
+  - port: 8080
+    targetPort: 8080
