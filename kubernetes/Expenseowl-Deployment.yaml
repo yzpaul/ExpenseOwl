@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: expenseowl
   namespace: expenseowl
@@ -23,3 +23,10 @@ spec:
         envFrom:
         - configMapRef:
             name: expenseowl-config
+        volumeMounts:
+        - mountPath: "/app/data"
+          name: expenseowl-vol
+      volumes:
+      - name: expenseowl-vol
+        persistentVolumeClaim:
+          claimName: "expenseowl-pvc"
