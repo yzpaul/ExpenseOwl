@@ -22,6 +22,4 @@ spec:
           name: expenseowl-port
         envFrom:
         - configMapRef:
-            name: expenseowl-cm-expense
-        - configMapRef:
-            name: expenseowl-cm-currency
+            name: expenseowl-config

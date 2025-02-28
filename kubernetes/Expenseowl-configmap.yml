@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: expenseowl-cm-expense
+  name: expenseowl-config
   namespace: expenseowl
 data:
   Food: Food
@@ -14,3 +14,4 @@ data:
   Healthcare: Healthcare
   Shopping: Shopping
   Other: Other
+  CURRENCY: jpy
