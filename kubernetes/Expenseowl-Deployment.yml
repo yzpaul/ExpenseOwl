@@ -4,10 +4,11 @@ metadata:
   name: expenseowl
   namespace: expenseowl
 spec:
+  serviceName: expenseowl-svc
   selector:
     matchLabels:
       app: expenseowl
-  replicas: 1
+  replicas: 1 
   template:
     metadata:
       labels:
