@@ -4,6 +4,7 @@ metadata:
   name: expenseowl-cm-currency
   namespace: expenseowl
 data:
+  EXPENSE_CATEGORIES: "Food,Groceries,Travel,Rent,Utilities,Money Transfer,Entertainment,Healthcare,Shopping,Other"
   CURRENCY: jpy
   
   # Note: you can use any currency you required just change from jpy to any of these listed below
