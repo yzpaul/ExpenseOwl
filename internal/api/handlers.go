@@ -152,6 +152,20 @@ func (h *Handler) ServeTableView(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *Handler) ServeSettingsPage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		log.Println("HTTP ERROR: Method not allowed")
+		return
+	}
+	w.Header().Set("Content-Type", "text/html")
+	if err := web.ServeTemplate(w, "settings.html"); err != nil {
+		http.Error(w, "Failed to serve template", http.StatusInternalServerError)
+		log.Printf("HTTP ERROR: Failed to serve template: %v\n", err)
+		return
+	}
+}
+
 func (h *Handler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -252,6 +266,31 @@ func (h *Handler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(line))
 	}
 	log.Println("HTTP: Exported expenses to CSV")
+}
+
+func (h *Handler) ExportJSON(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		log.Println("HTTP ERROR: Method not allowed")
+		return
+	}
+	expenses, err := h.storage.GetAllExpenses()
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Failed to retrieve expenses"})
+		log.Printf("HTTP ERROR: Failed to retrieve expenses: %v\n", err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", "attachment; filename=expenses.json")
+	// Pretty print the JSON data for better readability
+	jsonData, err := json.MarshalIndent(expenses, "", "    ")
+	if err != nil {
+		http.Error(w, "Failed to marshal JSON data", http.StatusInternalServerError)
+		log.Printf("HTTP ERROR: Failed to marshal JSON data: %v\n", err)
+		return
+	}
+	w.Write(jsonData)
+	log.Println("HTTP: Exported expenses to JSON")
 }
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {

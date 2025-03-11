@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <title>ExpenseOwl Settings</title>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 align="center">ExpenseOwl</h1>
+            <div class="nav-bar">
+                <a href="/" class="view-button" data-tooltip="Dashboard">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </a>
+                <a href="/table" class="view-button" data-tooltip="Table View">
+                    <i class="fa-solid fa-table"></i>
+                </a>
+                <a href="/settings" class="view-button active" data-tooltip="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- Categories Section -->
+        <div class="form-container">
+            <h2>Category Settings</h2>
+            <div id="categories-manager">
+                <div id="categories-list" class="categories-list">
+                    <!-- Categories will be populated here -->
+                </div>
+                <div class="category-input-container">
+                    <input type="text" id="newCategory" placeholder="Add new category">
+                    <button id="addCategory" class="nav-button">Add</button>
+                </div>
+                <button id="saveCategories" class="nav-button">Save Categories</button>
+                <div id="categoriesMessage" class="form-message"></div>
+            </div>
+        </div>
+
+        <!-- Currency Section -->
+        <div class="form-container">
+            <h2>Currency Settings</h2>
+            <div class="currency-selector">
+                <select id="currencySelect">
+                    <!-- Currencies will be populated here -->
+                </select>
+                <button id="saveCurrency" class="nav-button">Save Currency</button>
+                <div id="currencyMessage" class="form-message"></div>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="form-container">
+            <h2>Export Data</h2>
+            <div class="export-buttons">
+                <a href="/export/csv" class="nav-button" download="expenses.csv">
+                    <i class="fa-solid fa-file-csv"></i> Export CSV
+                </a>
+                <a href="/export/json" class="nav-button" download="expenses.json">
+                    <i class="fa-solid fa-file-code"></i> Export JSON
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Currency mapping (copied from the backend for frontend use)
+        const currencySymbols = {
+            "usd": "$",    // US Dollar
+            "eur": "€",    // Euro
+            "gbp": "£",    // British Pound
+            "jpy": "¥",    // Japanese Yen
+            "cny": "¥",    // Chinese Yuan
+            "krw": "₩",    // Korean Won
+            "inr": "₹",    // Indian Rupee
+            "rub": "₽",    // Russian Ruble
+            "brl": "R$",   // Brazilian Real
+            "zar": "R",    // South African Rand
+            "aed": "AED",  // UAE Dirham
+            "aud": "A$",   // Australian Dollar
+            "cad": "C$",   // Canadian Dollar
+            "chf": "Fr",   // Swiss Franc
+            "hkd": "HK$",  // Hong Kong Dollar
+            "sgd": "S$",   // Singapore Dollar
+            "thb": "฿",    // Thai Baht
+            "try": "₺",    // Turkish Lira
+            "mxn": "Mex$", // Mexican Peso
+            "php": "₱",    // Philippine Peso
+            "pln": "zł",   // Polish Złoty
+            "sek": "kr",   // Swedish Krona
+            "nzd": "NZ$",  // New Zealand Dollar
+            "dkk": "kr.",  // Danish Krone
+            "idr": "Rp",   // Indonesian Rupiah
+            "ils": "₪",    // Israeli New Shekel
+            "vnd": "₫",    // Vietnamese Dong
+            "myr": "RM",   // Malaysian Ringgit
+        };
+
+        // Initial data
+        let categories = [];
+        let currentCurrency = "";
+
+        // Functions to show message
+        function showMessage(elementId, message, isSuccess) {
+            const messageDiv = document.getElementById(elementId);
+            messageDiv.textContent = message;
+            messageDiv.className = isSuccess ? 'form-message success' : 'form-message error';
+            
+            // Clear message after 3 seconds
+            setTimeout(() => {
+                messageDiv.textContent = '';
+                messageDiv.className = 'form-message';
+            }, 3000);
+        }
+
+        // Category functions
+        function renderCategories() {
+            const list = document.getElementById('categories-list');
+            list.innerHTML = '';
+            
+            categories.forEach((category, index) => {
+                const item = document.createElement('div');
+                item.className = 'category-item';
+                item.innerHTML = `
+                    <span>${category}</span>
+                    <button class="delete-button" onclick="removeCategory(${index})">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function addCategory() {
+            const input = document.getElementById('newCategory');
+            const category = input.value.trim();
+            
+            if (category && !categories.includes(category)) {
+                categories.push(category);
+                renderCategories();
+                input.value = '';
+            } else if (categories.includes(category)) {
+                showMessage('categoriesMessage', 'Category already exists', false);
+            }
+        }
+
+        function removeCategory(index) {
+            categories.splice(index, 1);
+            renderCategories();
+        }
+
+        async function saveCategories() {
+            if (categories.length === 0) {
+                showMessage('categoriesMessage', 'At least one category is required', false);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/categories/edit', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(categories)
+                });
+                
+                if (response.ok) {
+                    showMessage('categoriesMessage', 'Categories saved successfully', true);
+                } else {
+                    showMessage('categoriesMessage', 'Failed to save categories', false);
+                }
+            } catch (error) {
+                console.error('Error saving categories:', error);
+                showMessage('categoriesMessage', 'Error saving categories', false);
+            }
+        }
+
+        // Currency functions
+        function populateCurrencySelect() {
+            const select = document.getElementById('currencySelect');
+            select.innerHTML = '';
+            
+            for (const [code, symbol] of Object.entries(currencySymbols)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = `${code.toUpperCase()} (${symbol})`;
+                
+                // Select the current currency
+                if (symbol === currentCurrency) {
+                    option.selected = true;
+                }
+                
+                select.appendChild(option);
+            }
+        }
+
+        async function saveCurrency() {
+            const currencyCode = document.getElementById('currencySelect').value;
+            
+            try {
+                const response = await fetch('/currency', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(currencyCode)
+                });
+                
+                if (response.ok) {
+                    showMessage('currencyMessage', 'Currency saved successfully', true);
+                    currentCurrency = currencySymbols[currencyCode];
+                } else {
+                    showMessage('currencyMessage', 'Failed to save currency', false);
+                }
+            } catch (error) {
+                console.error('Error saving currency:', error);
+                showMessage('currencyMessage', 'Error saving currency', false);
+            }
+        }
+
+        // Initialize the page
+        async function initialize() {
+            try {
+                const response = await fetch('/categories');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch configuration');
+                }
+                
+                const config = await response.json();
+                categories = [...config.categories];
+                currentCurrency = config.currency;
+                
+                renderCategories();
+                populateCurrencySelect();
+            } catch (error) {
+                console.error('Failed to initialize settings:', error);
+                showMessage('categoriesMessage', 'Failed to load settings', false);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('addCategory').addEventListener('click', addCategory);
+        document.getElementById('saveCategories').addEventListener('click', saveCategories);
+        document.getElementById('saveCurrency').addEventListener('click', saveCurrency);
+        document.getElementById('newCategory').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addCategory();
+            }
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initialize);
+
+        // Make removeCategory available globally
+        window.removeCategory = removeCategory;
+    </script>
+
+    <style>
+        /* Additional styles specific to the settings page */
+        .categories-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .category-item {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .category-item .delete-button {
+            padding: 0.25rem;
+            height: 1.5rem;
+            width: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .category-input-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .category-input-container input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        
+        .currency-selector {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .currency-selector select {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-width: 200px;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .currency-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+            
+            .export-buttons .nav-button {
+                text-align: center;
+            }
+        }
+    </style>
+</body>
+</html>
