@@ -67,7 +67,7 @@ func (h *Handler) EditCategories(w http.ResponseWriter, r *http.Request) {
 		log.Printf("HTTP ERROR: Failed to decode request body: %v\n", err)
 		return
 	}
-	h.config.Categories = categories
+	h.config.UpdateCategories(categories)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "success"})
 	log.Println("HTTP: Updated categories")
 }
@@ -84,7 +84,7 @@ func (h *Handler) EditCurrency(w http.ResponseWriter, r *http.Request) {
 		log.Printf("HTTP ERROR: Failed to decode request body: %v\n", err)
 		return
 	}
-	h.config.Currency = currency
+	h.config.UpdateCurrency(currency)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "success"})
 	log.Println("HTTP: Updated currency")
 }

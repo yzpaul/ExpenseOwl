@@ -67,7 +67,6 @@
     </div>
 
     <script>
-        // Currency mapping (copied from the backend for frontend use)
         const currencySymbols = {
             "usd": "$",    // US Dollar
             "eur": "€",    // Euro
@@ -99,7 +98,6 @@
             "myr": "RM",   // Malaysian Ringgit
         };
 
-        // Initial data
         let categories = [];
         let currentCurrency = "";
 
@@ -108,8 +106,6 @@
             const messageDiv = document.getElementById(elementId);
             messageDiv.textContent = message;
             messageDiv.className = isSuccess ? 'form-message success' : 'form-message error';
-            
-            // Clear message after 3 seconds
             setTimeout(() => {
                 messageDiv.textContent = '';
                 messageDiv.className = 'form-message';
@@ -120,7 +116,6 @@
         function renderCategories() {
             const list = document.getElementById('categories-list');
             list.innerHTML = '';
-            
             categories.forEach((category, index) => {
                 const item = document.createElement('div');
                 item.className = 'category-item';
@@ -137,7 +132,6 @@
         function addCategory() {
             const input = document.getElementById('newCategory');
             const category = input.value.trim();
-            
             if (category && !categories.includes(category)) {
                 categories.push(category);
                 renderCategories();
@@ -157,7 +151,6 @@
                 showMessage('categoriesMessage', 'At least one category is required', false);
                 return;
             }
-            
             try {
                 const response = await fetch('/categories/edit', {
                     method: 'PUT',
@@ -165,8 +158,7 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(categories)
-                });
-                
+                });   
                 if (response.ok) {
                     showMessage('categoriesMessage', 'Categories saved successfully', true);
                 } else {
@@ -182,24 +174,18 @@
         function populateCurrencySelect() {
             const select = document.getElementById('currencySelect');
             select.innerHTML = '';
-            
             for (const [code, symbol] of Object.entries(currencySymbols)) {
                 const option = document.createElement('option');
                 option.value = code;
                 option.textContent = `${code.toUpperCase()} (${symbol})`;
-                
-                // Select the current currency
                 if (symbol === currentCurrency) {
                     option.selected = true;
                 }
-                
                 select.appendChild(option);
             }
         }
-
         async function saveCurrency() {
             const currencyCode = document.getElementById('currencySelect').value;
-            
             try {
                 const response = await fetch('/currency', {
                     method: 'PUT',
@@ -208,7 +194,6 @@
                     },
                     body: JSON.stringify(currencyCode)
                 });
-                
                 if (response.ok) {
                     showMessage('currencyMessage', 'Currency saved successfully', true);
                     currentCurrency = currencySymbols[currencyCode];
@@ -228,11 +213,16 @@
                 if (!response.ok) {
                     throw new Error('Failed to fetch configuration');
                 }
-                
                 const config = await response.json();
                 categories = [...config.categories];
                 currentCurrency = config.currency;
-                
+                let currentCurrencyCode = "usd"; // Default
+                for (const [code, symbol] of Object.entries(currencySymbols)) {
+                    if (symbol === currentCurrency) {
+                        currentCurrencyCode = code;
+                        break;
+                    }
+                }
                 renderCategories();
                 populateCurrencySelect();
             } catch (error) {
@@ -253,89 +243,7 @@
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initialize);
-
-        // Make removeCategory available globally
         window.removeCategory = removeCategory;
     </script>
-
-    <style>
-        /* Additional styles specific to the settings page */
-        .categories-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .category-item {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 9999px;
-            padding: 0.5rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .category-item .delete-button {
-            padding: 0.25rem;
-            height: 1.5rem;
-            width: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .category-input-container {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .category-input-container input {
-            flex: 1;
-            padding: 0.5rem;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-        }
-        
-        .currency-selector {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .currency-selector select {
-            padding: 0.5rem;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            min-width: 200px;
-        }
-        
-        .export-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        @media (max-width: 768px) {
-            .currency-selector {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .export-buttons {
-                flex-direction: column;
-            }
-            
-            .export-buttons .nav-button {
-                text-align: center;
-            }
-        }
-    </style>
 </body>
 </html>

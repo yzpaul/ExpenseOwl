@@ -114,7 +114,7 @@
             if (postfixCurrencies.has(currencySymbol)) {
                 return `${formattedAmount} ${currencySymbol}`;
             }
-            return `${currencySymbol}${formattedAmount}`;
+            return `${currencySymbol} ${formattedAmount}`;
         }
 
         function calculateCategoryBreakdown(expenses) {
