@@ -1,9 +1,12 @@
 package config
 
 import (
+	"errors"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -56,6 +59,27 @@ var currencySymbols = map[string]string{
 	"myr": "RM",   // Malaysian Ringgit
 }
 
+type Expense struct {
+	ID       string    `json:"id"`
+	Name     string    `json:"name"`
+	Category string    `json:"category"`
+	Amount   float64   `json:"amount"`
+	Date     time.Time `json:"date"`
+}
+
+func (e *Expense) Validate() error {
+	if e.Name == "" {
+		return errors.New("expense name is required")
+	}
+	if e.Category == "" {
+		return errors.New("category is required")
+	}
+	if e.Amount <= 0 {
+		return errors.New("amount must be greater than 0")
+	}
+	return nil
+}
+
 func NewConfig(dataPath string) *Config {
 	categories := defaultCategories
 	if envCategories := os.Getenv("EXPENSE_CATEGORIES"); envCategories != "" {
@@ -64,18 +88,21 @@ func NewConfig(dataPath string) *Config {
 			categories[i] = strings.TrimSpace(categories[i])
 		}
 	}
+	log.Println("Using custom categories from environment variables")
 	currency := "$" // Default to USD
 	if envCurrency := strings.ToLower(os.Getenv("CURRENCY")); envCurrency != "" {
 		if symbol, exists := currencySymbols[envCurrency]; exists {
 			currency = symbol
 		}
 	}
+	log.Println("Using custom currency from environment variables")
 	finalPath := ""
 	if dataPath == "data" {
 		finalPath = filepath.Join(".", "data")
 	} else {
 		finalPath = filepath.Clean(dataPath)
 	}
+	log.Printf("Using data directory: %s\n", finalPath)
 	return &Config{
 		ServerPort:  "8080",
 		StoragePath: finalPath,
