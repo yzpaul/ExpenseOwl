@@ -1,11 +1,13 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -14,6 +16,12 @@ type Config struct {
 	StoragePath string
 	Categories  []string
 	Currency    string
+	mu          sync.RWMutex
+}
+
+type FileConfig struct {
+	Categories []string `json:"categories"`
+	Currency   string   `json:"currency"`
 }
 
 var defaultCategories = []string{
@@ -81,32 +89,110 @@ func (e *Expense) Validate() error {
 }
 
 func NewConfig(dataPath string) *Config {
-	categories := defaultCategories
-	if envCategories := os.Getenv("EXPENSE_CATEGORIES"); envCategories != "" {
-		categories = strings.Split(envCategories, ",")
-		for i := range categories {
-			categories[i] = strings.TrimSpace(categories[i])
-		}
-	}
-	log.Println("Using custom categories from environment variables")
-	currency := "$" // Default to USD
-	if envCurrency := strings.ToLower(os.Getenv("CURRENCY")); envCurrency != "" {
-		if symbol, exists := currencySymbols[envCurrency]; exists {
-			currency = symbol
-		}
-	}
-	log.Println("Using custom currency from environment variables")
 	finalPath := ""
 	if dataPath == "data" {
 		finalPath = filepath.Join(".", "data")
 	} else {
 		finalPath = filepath.Clean(dataPath)
 	}
+	if err := os.MkdirAll(finalPath, 0755); err != nil {
+		log.Printf("Error creating data directory: %v", err)
+	}
 	log.Printf("Using data directory: %s\n", finalPath)
-	return &Config{
+	cfg := &Config{
 		ServerPort:  "8080",
 		StoragePath: finalPath,
-		Categories:  categories,
-		Currency:    currency,
+		Categories:  defaultCategories,
+		Currency:    "$", // Default to USD
 	}
+	configPath := filepath.Join(finalPath, "config.json")
+	if fileConfig, err := loadConfigFile(configPath); err == nil {
+		cfg.Categories = fileConfig.Categories
+		cfg.Currency = fileConfig.Currency
+		log.Println("Loaded configuration from file")
+	}
+	if envCategories := os.Getenv("EXPENSE_CATEGORIES"); envCategories != "" {
+		categories := strings.Split(envCategories, ",")
+		for i := range categories {
+			categories[i] = strings.TrimSpace(categories[i])
+		}
+		cfg.Categories = categories
+		log.Println("Using custom categories from environment variables")
+	}
+	if envCurrency := strings.ToLower(os.Getenv("CURRENCY")); envCurrency != "" {
+		if symbol, exists := currencySymbols[envCurrency]; exists {
+			cfg.Currency = symbol
+		}
+		log.Println("Using custom currency from environment variables")
+	}
+	cfg.SaveConfig()
+	return cfg
 }
+
+func loadConfigFile(filePath string) (*FileConfig, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	var config FileConfig
+	if err := json.Unmarshal(data, &config); err != nil {
+		return nil, err
+	}
+	return &config, nil
+}
+
+func (c *Config) SaveConfig() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	filePath := filepath.Join(c.StoragePath, "config.json")
+	fileConfig := FileConfig{
+		Categories: c.Categories,
+		Currency:   c.Currency,
+	}
+	data, err := json.MarshalIndent(fileConfig, "", "    ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filePath, data, 0644)
+}
+
+func (c *Config) UpdateCategories(categories []string) error {
+	c.mu.Lock()
+	c.Categories = categories
+	c.mu.Unlock()
+	return c.SaveConfig()
+}
+
+func (c *Config) UpdateCurrency(currencyCode string) error {
+	c.mu.Lock()
+	if symbol, exists := currencySymbols[strings.ToLower(currencyCode)]; exists {
+		c.Currency = symbol
+	} else {
+		c.mu.Unlock()
+		return errors.New("invalid currency code")
+	}
+	c.mu.Unlock()
+	return c.SaveConfig()
+}
+
+// func (c *Config) GetCategories() []string {
+// 	c.mu.RLock()
+// 	defer c.mu.RUnlock()
+// 	categories := make([]string, len(c.Categories))
+// 	copy(categories, c.Categories)
+// 	return categories
+// }
+
+// func (c *Config) GetCurrency() string {
+// 	c.mu.RLock()
+// 	defer c.mu.RUnlock()
+// 	return c.Currency
+// }
+
+// func GetCurrencySymbolMap() map[string]string {
+// 	symbolMap := make(map[string]string)
+// 	for k, v := range currencySymbols {
+// 		symbolMap[k] = v
+// 	}
+// 	return symbolMap
+// }

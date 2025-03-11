@@ -36,9 +36,9 @@ So, I created this project, which I use in my home lab to track my expenses. Thi
 - Multi-architecture Docker container with support for persistent storage
 - REST API for expense management
 - Single-user focused (mainly for a home lab deployment)
-- CSV export of all expense data from the UI
-- Custom categories via environment variable (`EXPENSE_CATEGORIES`) with sensible defaults
-- Custom currency symbol in the frontend via environment variable (`CURRENCY`)
+- CSV and JSON export of all expense data from the UI
+- Custom categories via app settings or environment variable (`EXPENSE_CATEGORIES`)
+- Custom currency symbol in the frontend via app settings environment variable (`CURRENCY`)
 
 ### Visualization
 
@@ -50,6 +50,7 @@ So, I created this project, which I use in my home lab to track my expenses. Thi
     - This is where you can view individual expenses chronologically and delete them
     - You can use the browser's search to find a name if needed
 3. Month-by-month navigation
+4. Settings page for setting custom categories, currency, and export data as CSV or JSON
 
 ### Progressive Web App (PWA)
 
@@ -180,25 +181,29 @@ curl http://localhost:8080/expenses
 
 ### Config Options
 
+The primary config is stored in the data directory in the `config.json` file. A pre-defined configuration is automatically initialized. The currency in use and the categories can be customized from the `/settings` endpoint within the UI.
+
 ##### Currency Settings
 
-ExpenseOwl supports multiple currencies through the CURRENCY environment variable. If not specified, it defaults to USD ($). For example, to run with Euro, use the following environment variable:
+ExpenseOwl supports multiple currencies through the CURRENCY environment variable. If not specified, it defaults to USD ($). All available options are shown in the UI settings page.
+
+Alternatively, an environment variable can also be used to set the currency. This is useful for containerized deployments where non-sensitive configuration can remain as deployment templates. For example, to use Euro:
 
 ```bash
 CURRENCY=eur ./expenseowl
 ```
 
-Similarly, the environment variable can be set in a compose stack or using `-e` in the command line with a Docker command. The full list of supported currencies is in [this file](https://github.com/Tanq16/ExpenseOwl/blob/main/internal/config/config.go#L27).
+The environment variable can be set in a compose stack or using `-e` in the command line with a Docker command.
 
 ##### Category Settings
 
-ExpenseOwl also supports custom categories, which can be specified through environment variables like so:
+ExpenseOwl also supports custom categories. A default set is pre-loaded in the config for ease of use and can be easily changed within the UI.
+
+Alternatively, like currency, categories can also be specified in an environment variable like so:
 
 ```bash
 EXPENSE_CATEGORIES="Rent,Food,Transport,Fun,Bills" ./expenseowl
 ```
-
-Similarly, it can be specified in a Docker compose stack of a Docker CLI command with the `-e` flag. Refer to the examples shown above in the README.
 
 # Contributing
 

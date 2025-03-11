@@ -18,8 +18,8 @@
                 <a href="/table" class="view-button active" data-tooltip="Table View">
                     <i class="fa-solid fa-table"></i>
                 </a>
-                <a href="/export" class="view-button" download="expenses.csv" data-tooltip="All expenses to CSV">
-                    <i class="fa-solid fa-file-csv"></i>
+                <a href="/settings" class="view-button" data-tooltip="Settings">
+                    <i class="fa-solid fa-gear"></i>
                 </a>
             </div>
         </header>
@@ -93,7 +93,7 @@
             if (postfixCurrencies.has(currencySymbol)) {
                 return `${formattedAmount} ${currencySymbol}`;
             }
-            return `${currencySymbol}${formattedAmount}`;
+            return `${currencySymbol} ${formattedAmount}`;
         }
 
         function formatMonth(date) {
