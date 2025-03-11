@@ -1,33 +1,17 @@
-To Run In Kubernetes on any cluster use below code snippets.
+**NOTE:** The Kubernetes specification mentioned here has not been tested avidly and is a community supported definition. I (author) may disregard issues associated with the Kubernetes spec (until I personally shift my homelab to a cluster). 
 
-Suggestions: Use k3s(https://k3s.io/) cluster(a light weight and open-source k8s distribution.)
+Use the following instructions to apply the Kubernetes spec:
 
-
 ```bash
-  git clone git@github.com:Tanq16/ExpenseOwl.git
-```
-```bash
-  kubectl apply -f kubernetes/_namespace.yml
-```
-```bash
- kubectl apply -f kubernetes/Expenseowl-Deployment.yml
-```
-```bash
- kubectl apply -f kubernetes/Expenseowl-configmap.yml
-```
-```bash
- kubectl apply -f kubernetes/Expenseowl-svc.yml
-```
-```bash
- kubectl apply -f kubernetes/Expenseowl-pvc.yml
-```
-```bash
- kubectl apply -f kubernetes/Expenseowl-ingress.yml
-```
-```bash
+kubectl apply -f kubernetes/_namespace.yml
+kubectl apply -f kubernetes/Expenseowl-Deployment.yml
+kubectl apply -f kubernetes/Expenseowl-configmap.yml
+kubectl apply -f kubernetes/Expenseowl-svc.yml
+kubectl apply -f kubernetes/Expenseowl-pvc.yml
+kubectl apply -f kubernetes/Expenseowl-ingress.yml
 kubectl port-forward pod/<pod-name> 8080:8080 # Change Pod Name Here
+```
 
 ```
-```bash
-Dashboard: http://expenseowl.localhost/
+Dashboard available at http://expenseowl.localhost/
 ```

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"path"
 	"strings"
 	"time"
 
@@ -192,53 +191,21 @@ func (h *Handler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
 	log.Printf("HTTP: Deleted expense with ID %s\n", id)
 }
 
-func (h *Handler) ServeCSS(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/css")
-	if err := web.ServeTemplate(w, "style.css"); err != nil {
-		http.Error(w, "Failed to serve stylesheet", http.StatusInternalServerError)
-		log.Printf("HTTP ERROR: Failed to serve stylesheet: %v\n", err)
+// Static Handler
+func (h *Handler) ServeStaticFile(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		log.Println("HTTP ERROR: Method not allowed")
+		return
+	}
+	if err := web.ServeStatic(w, r.URL.Path); err != nil {
+		http.Error(w, "Failed to serve static file", http.StatusInternalServerError)
+		log.Printf("HTTP ERROR: Failed to serve static file %s: %v\n", r.URL.Path, err)
 		return
 	}
 }
 
-func (h *Handler) ServeFavicon(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "image/x-icon")
-	if err := web.ServeTemplate(w, "favicon.ico"); err != nil {
-		http.Error(w, "Failed to serve favicon", http.StatusInternalServerError)
-		log.Printf("HTTP ERROR: Failed to serve favicon: %v\n", err)
-		return
-	}
-}
-
-// PWA handlers
-func (h *Handler) ServeManifest(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	if err := web.ServeTemplate(w, "manifest.json"); err != nil {
-		http.Error(w, "Failed to serve manifest", http.StatusInternalServerError)
-		log.Printf("HTTP ERROR: Failed to serve manifest: %v\n", err)
-		return
-	}
-}
-
-func (h *Handler) ServeServiceWorker(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/javascript")
-	if err := web.ServeTemplate(w, "sw.js"); err != nil {
-		http.Error(w, "Failed to serve service worker", http.StatusInternalServerError)
-		log.Printf("HTTP ERROR: Failed to serve service worker: %v\n", err)
-		return
-	}
-}
-
-func (h *Handler) ServePWAIcon(w http.ResponseWriter, r *http.Request) {
-	iconName := path.Base(r.URL.Path)
-	w.Header().Set("Content-Type", "image/png")
-	if err := web.ServeTemplate(w, "pwa/"+iconName); err != nil {
-		http.Error(w, "Failed to serve icon", http.StatusInternalServerError)
-		log.Printf("HTTP ERROR: Failed to serve icon: %v\n", err)
-		return
-	}
-}
-
+// Export handlers
 func (h *Handler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
