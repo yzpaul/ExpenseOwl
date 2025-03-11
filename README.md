@@ -22,11 +22,9 @@
 
 # Why Create This?
 
-There are a ton of amazing projects for expense tracking across GitHub ([Actual](https://github.com/actualbudget/actual), [Firefly III](https://github.com/firefly-iii/firefly-iii), etc.). They're all incredible, but they aren't the *fastest* when trying to add expenses and offer many features I don't use. Some use varying formats of data or complex APIs. *Don't get me wrong*, they're great when needed, but I wanted something dead simple that only gives me a monthly pie chart and a tabular representation. NOTHING else!
+There are a ton of amazing projects for expense tracking across GitHub ([Actual](https://github.com/actualbudget/actual), [Firefly III](https://github.com/firefly-iii/firefly-iii), etc.). They're all incredible, but they aren't the *fastest* when trying to add expenses and offer many features I don't use. Some use varying formats of data or complex budgeting or complex APIs. *Don't get me wrong*, they're incredible when fully utilized, but I wanted something dead simple that only gives me a monthly pie chart and a tabular representation. NOTHING else!
 
-Hence, I created this project, which I use in my home lab to track my expenses. The data is just JSON, so I can do whatever I want with it, including using `jq` to convert to CSV. The UI is elegant and mobile-friendly.
-
-This app's intention is to track spending across your categories in a simplistic manner. There is no complicated searching or editing - just add, delete, and view! This intention will not change throughout the project's lifecycle. This is not an app for budgeting; it's for tracking.
+So, I created this project, which I use in my home lab to track my expenses. This app's intention is to track spending across your categories (custom or pre-defined) in a simplistic manner. There is no complicated searching or editing - just `add`, `delete`, and `view`! This intention will not change throughout the project's lifecycle. This is *not* an app for budgeting; it's for straightforward tracking.
 
 # Features
 
@@ -39,7 +37,6 @@ This app's intention is to track spending across your categories in a simplistic
 - REST API for expense management
 - Single-user focused (mainly for a home lab deployment)
 - CSV export of all expense data from the UI
-- CLI for both server and client (if needed) operations
 - Custom categories via environment variable (`EXPENSE_CATEGORIES`) with sensible defaults
 - Custom currency symbol in the frontend via environment variable (`CURRENCY`)
 
@@ -68,9 +65,9 @@ I reiterate that you should use this to add expenses quickly. The default name f
 
 In the ideal case, `enter the amount and choose the category` - that's it!
 
-For a bit more involved case, `enter the amount and name, choose the category, and select the date` - still very simple!
+For a bit more involved case, `enter the name, choose the category, enter the amount, and select the date` - still very simple!
 
-The application only allows addition and deletion; there's no need for editing. There are no tags, wallet info, budgeting, or anything else! Plain and simple for the win.
+The application only allows addition and deletion; there's no need for editing (if needed, just delete and re-add). There are no tags, wallet info, budgeting, or anything else! Plain and simple for the win.
 
 # Screenshots
 
@@ -148,29 +145,19 @@ Ideally, once deployed, use the web interface and you're good to go. Access the 
 
 If command-line automations are required for use with the REST API, read on!
 
-### CLI Mode
+### Executable
 
-The application binary can run in either server or client mode:
-
-Server Mode (Default):
+The application binary can be run directly within CLI for any common OS and architecture:
 
 ```bash
 ./expenseowl
-# or explicitly
-./expenseowl -serve
 # or from a custom directory
 ./expenseowl -data /custom/path
 ```
 
-Client Mode:
-
-```bash
-./expenseowl -client -addr localhost:8080
-```
-
-In client mode, you'll be prompted to enter the expense name, category (select from a list), amount, and date (in YYYY-MM-DD; optional, sets to the current date when not provided).
-
 ### REST API
+
+ExpenseOwl provides an API to allow adding expenses via automations or simply via cURL, Siri Shortcuts, or other automations.
 
 Add Expense:
 
