@@ -74,7 +74,7 @@
             <form id="expenseForm" class="expense-form">
                 <div class="form-group">
                     <label for="name">Name</label>
-                    <input type="text" id="name" value="unnamed" required>
+                    <input type="text" id="name" value="-" required>
                 </div>
                 
                 <div class="form-group">
@@ -233,6 +233,7 @@
 
         function updateLegend(categoryData) {
             const legendContainer = document.getElementById('customLegend');
+            legendContainer.innerHTML = ''; // Clear previous legend
             // Get unique categories from current month's expenses only
             const monthExpenses = getMonthExpenses(allExpenses);
             const currentMonthCategories = [...new Set(monthExpenses
