@@ -6,6 +6,35 @@
     <link rel="stylesheet" href="/fa.min.css">
     <link rel="stylesheet" href="/style.css">
     <title>ExpenseOwl Settings</title>
+    <style>
+        .category-item {
+            cursor: grab;
+        }
+        .category-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        .category-item.drag-over {
+            border: 1px dashed var(--accent);
+            background-color: rgba(105, 175, 222, 0.1);
+        }
+        .category-item .drag-handle {
+            cursor: grab;
+            margin-right: 6px;
+            color: var(--text-secondary);
+        }
+        .category-handle-area {
+            display: flex;
+            align-items: center;
+        }
+        .placeholder {
+            border: 2px dashed var(--accent);
+            background-color: rgba(105, 175, 222, 0.1);
+            margin: 0.25rem 0;
+            height: 2px;
+            border-radius: 9999px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -29,7 +58,7 @@
 
         <!-- Categories Section -->
         <div class="form-container">
-            <h2>Category Settings</h2>
+            <h2 align="center">Category Settings</h2>
             <div id="categories-manager">
                 <div id="categories-list" class="categories-list">
                     <!-- Categories will be populated here -->
@@ -45,7 +74,7 @@
 
         <!-- Currency Section -->
         <div class="form-container">
-            <h2>Currency Settings</h2>
+            <h2 align="center">Currency Settings</h2>
             <div class="currency-selector">
                 <select id="currencySelect">
                     <!-- Currencies will be populated here -->
@@ -57,7 +86,7 @@
 
         <!-- Export Section -->
         <div class="form-container">
-            <h2>Export Data</h2>
+            <h2 align="center">Export Data</h2>
             <div class="export-buttons">
                 <a href="/export/csv" class="nav-button" download="expenses.csv">
                     <i class="fa-solid fa-file-csv"></i> Export CSV
@@ -103,6 +132,7 @@
 
         let categories = [];
         let currentCurrency = "";
+        let draggedItem = null;
 
         // Functions to show message
         function showMessage(elementId, message, isSuccess) {
@@ -122,14 +152,108 @@
             categories.forEach((category, index) => {
                 const item = document.createElement('div');
                 item.className = 'category-item';
+                item.draggable = true;
+                item.dataset.index = index;
                 item.innerHTML = `
-                    <span>${category}</span>
+                    <div class="category-handle-area">
+                        <span class="drag-handle"><i class="fa-solid fa-grip-lines"></i></span>
+                        <span>${category}</span>
+                    </div>
                     <button class="delete-button" onclick="removeCategory(${index})">
                         <i class="fa-solid fa-times"></i>
                     </button>
                 `;
+                
+                // Add drag event listeners
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('dragleave', handleDragLeave);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('drop', handleDrop);
+                
                 list.appendChild(item);
             });
+        }
+
+        // Drag and drop handlers
+        function handleDragStart(e) {
+            this.classList.add('dragging');
+            draggedItem = this;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+            removePlaceholders();
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+            if (this === draggedItem) return false;
+            // Determine it should go before or after this item
+            const rect = this.getBoundingClientRect();
+            const clientY = e.clientY;
+            const threshold = rect.top + (rect.height / 2);
+            const isBefore = clientY < threshold;
+            removePlaceholders();
+            // Add a placeholder before or after this item
+            const placeholder = document.createElement('div');
+            placeholder.className = 'placeholder';
+            if (isBefore) {
+                this.parentNode.insertBefore(placeholder, this);
+            } else {
+                this.parentNode.insertBefore(placeholder, this.nextSibling);
+            }
+            return false;
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+            removePlaceholders();
+        }
+        
+        function removePlaceholders() {
+            document.querySelectorAll('.placeholder').forEach(placeholder => {
+                placeholder.remove();
+            });
+        }
+
+        function handleDrop(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            removePlaceholders();
+            // Don't do anything if dropping on the same item
+            if (draggedItem !== this) {
+                const rect = this.getBoundingClientRect();
+                const clientY = e.clientY;
+                const threshold = rect.top + (rect.height / 2);
+                const isBefore = clientY < threshold;
+                
+                const fromIndex = parseInt(draggedItem.dataset.index);
+                let toIndex = parseInt(this.dataset.index);
+                
+                if (!isBefore && fromIndex < toIndex) {
+                    toIndex = toIndex; // Insert after
+                } else if (isBefore && fromIndex > toIndex) {
+                    toIndex = toIndex; // Insert before
+                } else if (isBefore && fromIndex < toIndex) {
+                    toIndex = toIndex - 1; // Adjust for removal of dragged item
+                } else if (!isBefore && fromIndex > toIndex) {
+                    toIndex = toIndex + 1; // Insert after, adjust for position
+                }
+                
+                const movedItem = categories[fromIndex];
+                categories.splice(fromIndex, 1);
+                categories.splice(toIndex, 0, movedItem);
+                renderCategories();
+            }
+            return false;
         }
 
         function addCategory() {
@@ -187,6 +311,7 @@
                 select.appendChild(option);
             }
         }
+        
         async function saveCurrency() {
             const currencyCode = document.getElementById('currencySelect').value;
             try {
