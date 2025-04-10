@@ -35,7 +35,7 @@ body {
 }
 
 header {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     border-bottom: 1px solid var(--border);
 }
 
@@ -44,7 +44,7 @@ header {
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .nav-button {
@@ -175,7 +175,7 @@ header {
     display: flex;
     justify-content: center;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .view-button {

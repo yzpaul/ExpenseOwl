@@ -23,7 +23,7 @@
 <body>
     <div class="container">
         <header>
-            <h1 align="center">ExpenseOwl</h1>
+            <h1 align="center"><img src="/pwa/icon-512.png" alt="ExpenseOwl Logo" height="75" style="vertical-align: middle; margin-right: 10px;">ExpenseOwl</h1>
             <div class="nav-bar">
                 <a href="/" class="view-button active" data-tooltip="Dashboard">
                     <i class="fa-solid fa-chart-pie"></i>
@@ -215,10 +215,9 @@
                 legendContainer.appendChild(item);
             });
 
-            // Calculate totals
-            const totalExpenses = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-            const totalWithoutRent = monthExpenses
-                .filter(exp => exp.category !== 'Rent')
+            // Calculate total of only the enabled categories
+            const activeTotalExpenses = monthExpenses
+                .filter(exp => !disabledCategories.has(exp.category))
                 .reduce((sum, exp) => sum + exp.amount, 0);
 
             // Add totals section
@@ -227,8 +226,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span>Total:</span>
                         <span class="amount">
-                            ${formatCurrency(totalExpenses)}
-                            <span>(${formatCurrency(totalWithoutRent)} w/o rent)</span>
+                            ${formatCurrency(activeTotalExpenses)}
                         </span>
                     </div>
                 </div>

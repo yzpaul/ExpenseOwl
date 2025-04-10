@@ -34,6 +34,7 @@ var defaultCategories = []string{
 	"Healthcare",
 	"Shopping",
 	"Miscellaneous",
+	"Income",
 }
 
 var currencySymbols = map[string]string{
