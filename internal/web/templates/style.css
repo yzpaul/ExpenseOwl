@@ -176,6 +176,7 @@ header {
     justify-content: center;
     gap: 1rem;
     margin-bottom: 1rem;
+    align-items: center;
 }
 
 .view-button {
@@ -187,6 +188,8 @@ header {
     cursor: pointer;
     transition: background-color 0.2s;
     text-decoration: none;
+    align-content: center;
+    height: fit-content;
 }
 
 .view-button:hover {
@@ -405,6 +408,55 @@ header {
     gap: 1rem;
 }
 
+.cashflow-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: stretch;
+}
+
+.cashflow-item {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.cashflow-item.income {
+    background-color: rgba(52, 211, 153, 0.1);
+}
+
+.cashflow-item.expenses {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.cashflow-item.balance {
+    background-color: rgba(251, 191, 36, 0.1);
+}
+
+.cashflow-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.cashflow-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.cashflow-value.positive {
+    color: #2EAB7D;
+}
+
+.cashflow-value.negative {
+    color: #EF4444;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
     .chart-container {
@@ -475,6 +527,19 @@ header {
     .export-buttons .nav-button {
         text-align: center;
     }
+
+    .cashflow-container {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .cashflow-item {
+        padding: 0.75rem;
+    }
+    
+    .cashflow-value {
+        font-size: 1.2rem;
+    }
 }
 
 .form-container {
@@ -540,7 +605,7 @@ header {
 
 .form-message.success {
     background-color: rgba(52, 211, 153, 0.1);
-    color: #34D399;
+    color: #2EAB7D;
 }
 
 .form-message.error {
