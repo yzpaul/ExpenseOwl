@@ -34,6 +34,7 @@ var defaultCategories = []string{
 	"Healthcare",
 	"Shopping",
 	"Miscellaneous",
+	"Income",
 }
 
 var currencySymbols = map[string]string{
@@ -106,24 +107,26 @@ func NewConfig(dataPath string) *Config {
 		Currency:    "$", // Default to USD
 	}
 	configPath := filepath.Join(finalPath, "config.json")
-	if fileConfig, err := loadConfigFile(configPath); err == nil {
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		log.Println("Configuration file not found, creating default configuration")
+		if envCategories := os.Getenv("EXPENSE_CATEGORIES"); envCategories != "" {
+			categories := strings.Split(envCategories, ",")
+			for i := range categories {
+				categories[i] = strings.TrimSpace(categories[i])
+			}
+			cfg.Categories = categories
+			log.Println("Using custom categories from environment variables")
+		}
+		if envCurrency := strings.ToLower(os.Getenv("CURRENCY")); envCurrency != "" {
+			if symbol, exists := currencySymbols[envCurrency]; exists {
+				cfg.Currency = symbol
+			}
+			log.Println("Using custom currency from environment variables")
+		}
+	} else if fileConfig, err := loadConfigFile(configPath); err == nil {
 		cfg.Categories = fileConfig.Categories
 		cfg.Currency = fileConfig.Currency
 		log.Println("Loaded configuration from file")
-	}
-	if envCategories := os.Getenv("EXPENSE_CATEGORIES"); envCategories != "" {
-		categories := strings.Split(envCategories, ",")
-		for i := range categories {
-			categories[i] = strings.TrimSpace(categories[i])
-		}
-		cfg.Categories = categories
-		log.Println("Using custom categories from environment variables")
-	}
-	if envCurrency := strings.ToLower(os.Getenv("CURRENCY")); envCurrency != "" {
-		if symbol, exists := currencySymbols[envCurrency]; exists {
-			cfg.Currency = symbol
-		}
-		log.Println("Using custom currency from environment variables")
 	}
 	cfg.SaveConfig()
 	return cfg
@@ -174,25 +177,3 @@ func (c *Config) UpdateCurrency(currencyCode string) error {
 	c.mu.Unlock()
 	return c.SaveConfig()
 }
-
-// func (c *Config) GetCategories() []string {
-// 	c.mu.RLock()
-// 	defer c.mu.RUnlock()
-// 	categories := make([]string, len(c.Categories))
-// 	copy(categories, c.Categories)
-// 	return categories
-// }
-
-// func (c *Config) GetCurrency() string {
-// 	c.mu.RLock()
-// 	defer c.mu.RUnlock()
-// 	return c.Currency
-// }
-
-// func GetCurrencySymbolMap() map[string]string {
-// 	symbolMap := make(map[string]string)
-// 	for k, v := range currencySymbols {
-// 		symbolMap[k] = v
-// 	}
-// 	return symbolMap
-// }

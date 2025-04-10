@@ -23,8 +23,11 @@
 <body>
     <div class="container">
         <header>
-            <h1 align="center">ExpenseOwl</h1>
+            <!-- <h1 align="center"><img src="/pwa/icon-512.png" alt="ExpenseOwl Logo" height="75" style="vertical-align: middle; margin-right: 10px;">ExpenseOwl</h1> -->
             <div class="nav-bar">
+                <a href="/">
+                    <img src="/pwa/icon-512.png" alt="ExpenseOwl Logo" height="85" style="vertical-align: middle; margin-right: 20px;">
+                </a>
                 <a href="/" class="view-button active" data-tooltip="Dashboard">
                     <i class="fa-solid fa-chart-pie"></i>
                 </a>
@@ -52,11 +55,26 @@
             </div>
         </div>
 
+        <div id="cashflow-section" class="cashflow-container" style="display: none;">
+            <div class="cashflow-item income">
+                <div class="cashflow-label">Income</div>
+                <div class="cashflow-value" id="cashflow-income"></div>
+            </div>
+            <div class="cashflow-item expenses">
+                <div class="cashflow-label">Expenses</div>
+                <div class="cashflow-value" id="cashflow-expenses"></div>
+            </div>
+            <div class="cashflow-item balance">
+                <div class="cashflow-label">Balance</div>
+                <div class="cashflow-value" id="cashflow-balance"></div>
+            </div>
+        </div>
+
         <div class="form-container">
             <form id="expenseForm" class="expense-form">
                 <div class="form-group">
                     <label for="name">Name</label>
-                    <input type="text" id="name" value="unnamed" required>
+                    <input type="text" id="name" value="-" required>
                 </div>
                 
                 <div class="form-group">
@@ -121,7 +139,7 @@
             const categoryTotals = {};
             let totalAmount = 0;
             expenses.forEach(exp => {
-                if (!disabledCategories.has(exp.category)) {
+                if (exp.category !== "Income" && !disabledCategories.has(exp.category)) {
                     categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
                     totalAmount += exp.amount;
                 }
@@ -135,14 +153,46 @@
                 .sort((a, b) => b.total - a.total);
         }
 
+        function calculateIncome(expenses) {
+            return expenses.filter(exp => exp.category === "Income").reduce((sum, exp) => sum + exp.amount, 0);
+        }
+
+        function calculateExpenses(expenses) {
+            return expenses.filter(exp => exp.category !== "Income").reduce((sum, exp) => sum + exp.amount, 0);
+        }
+
         function updateChartAndLegend() {
             const monthExpenses = getMonthExpenses(allExpenses);
             const categoryData = calculateCategoryBreakdown(monthExpenses);
+            updateCashflow(monthExpenses);
             if (categoryData.length === 0) {
                 showNoDataMessage();
             } else {
                 createPieChart(categoryData);
                 updateLegend(categoryData);
+            }
+        }
+
+        function updateCashflow(expenses) {
+            const income = calculateIncome(expenses);
+            const expenseTotal = calculateExpenses(expenses);
+            const balance = income - expenseTotal;
+            const cashflowSection = document.getElementById('cashflow-section');
+            if (income > 0) {
+                document.getElementById('cashflow-income').textContent = formatCurrency(income);
+                document.getElementById('cashflow-expenses').textContent = formatCurrency(expenseTotal);
+                document.getElementById('cashflow-balance').textContent = formatCurrency(balance);
+                const balanceElement = document.getElementById('cashflow-balance');
+                if (balance >= 0) {
+                    balanceElement.classList.add('positive');
+                    balanceElement.classList.remove('negative');
+                } else {
+                    balanceElement.classList.add('negative');
+                    balanceElement.classList.remove('positive');
+                }
+                cashflowSection.style.display = 'flex';
+            } else {
+                cashflowSection.style.display = 'none';
             }
         }
 
@@ -183,10 +233,12 @@
 
         function updateLegend(categoryData) {
             const legendContainer = document.getElementById('customLegend');
-            legendContainer.innerHTML = '<h2>Categories</h2>';
+            legendContainer.innerHTML = ''; // Clear previous legend
             // Get unique categories from current month's expenses only
             const monthExpenses = getMonthExpenses(allExpenses);
-            const currentMonthCategories = [...new Set(monthExpenses.map(exp => exp.category))];
+            const currentMonthCategories = [...new Set(monthExpenses
+                .filter(exp => exp.category !== "Income") // Exclude Income from legend
+                .map(exp => exp.category))];
             // Create a map of active category data for easy lookup
             const categoryMap = new Map(categoryData.map(cat => [cat.category, cat]));
             
@@ -215,20 +267,18 @@
                 legendContainer.appendChild(item);
             });
 
-            // Calculate totals
-            const totalExpenses = monthExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-            const totalWithoutRent = monthExpenses
-                .filter(exp => exp.category !== 'Rent')
+            // Calculate total of only the enabled categories
+            const activeTotalExpenses = monthExpenses
+                .filter(exp => exp.category !== "Income" && !disabledCategories.has(exp.category))
                 .reduce((sum, exp) => sum + exp.amount, 0);
 
             // Add totals section
             const totalsHtml = `
-                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span>Total:</span>
                         <span class="amount">
-                            ${formatCurrency(totalExpenses)}
-                            <span>(${formatCurrency(totalWithoutRent)} w/o rent)</span>
+                            ${formatCurrency(activeTotalExpenses)}
                         </span>
                     </div>
                 </div>
