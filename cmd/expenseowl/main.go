@@ -23,6 +23,7 @@ func runServer(dataPath string) {
 	http.HandleFunc("/categories", handler.GetCategories)
 	http.HandleFunc("/categories/edit", handler.EditCategories)
 	http.HandleFunc("/currency", handler.EditCurrency)
+	http.HandleFunc("/startdate", handler.EditStartDate)
 	http.HandleFunc("/expense", handler.AddExpense)
 	http.HandleFunc("/expenses", handler.GetExpenses)
 	http.HandleFunc("/table", handler.ServeTableView)
