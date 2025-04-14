@@ -107,6 +107,7 @@
     </div>
     <script>
         let currencySymbol = '$'; // Default to USD
+        let startDate = 1;
         let pieChart = null;
         let currentDate = new Date();
         let allExpenses = [];
@@ -306,6 +307,7 @@
                     `<option value="${cat}">${cat}</option>`
                 ).join('');
                 currencySymbol = config.currency;
+                startDate = config.startDate;
                 // Fetch expenses
                 const response = await fetch('/expenses');
                 if (!response.ok) throw new Error('Failed to fetch data');
@@ -355,11 +357,29 @@
         // Get start and end of month
         function getMonthBounds(date) {
             const localDate = new Date(date);
-            const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), 1);
-            const endLocal = new Date(localDate.getFullYear(), localDate.getMonth() + 1, 0, 23, 59, 59, 999);
-            const start = new Date(startLocal.toISOString());
-            const end = new Date(endLocal.toISOString());
-            return { start, end };
+            if (startDate <= 1) { // If startDate === 1 show the full month
+                const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), 1);
+                const endLocal = new Date(localDate.getFullYear(), localDate.getMonth() + 1, 0, 23, 59, 59, 999);
+                const start = new Date(startLocal.toISOString());
+                const end = new Date(endLocal.toISOString());
+                return { start, end };
+            }
+            // If startDate !== 1 show from startDate till next months startDate
+            if (localDate.getDate() < startDate) {
+                // If not past startDate in the month, show previous and current month
+                const startLocal = new Date(localDate.getMonth() === 0 ? localDate.getFullYear()-1 : localDate.getFullYear(), localDate.getMonth() === 0 ? 11 : localDate.getMonth()-1, startDate);
+                const endLocal = new Date(localDate.getFullYear(), localDate.getMonth(), startDate-1, 23, 59, 59, 999);
+                const start = new Date(startLocal.toISOString());
+                const end = new Date(endLocal.toISOString());
+                return { start, end };
+            } else {
+                // If past startDate, show from startDate till now
+                const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), startDate);
+                const endLocal = new Date(localDate.getMonth() === 11 ? localDate.getFullYear()+1 : localDate.getFullYear(), localDate.getMonth() === 11 ? 0 : localDate.getMonth(), startDate-1, 23, 59, 59, 999);
+                const start = new Date(startLocal.toISOString());
+                const end = new Date(endLocal.toISOString());
+                return { start, end };
+            }
         }
         // Filter expenses for current month
         function getMonthExpenses(expenses) {
