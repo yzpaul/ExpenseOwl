@@ -2,10 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/tanq16/expenseowl/internal/config"
@@ -203,61 +201,6 @@ func (h *Handler) ServeStaticFile(w http.ResponseWriter, r *http.Request) {
 		log.Printf("HTTP ERROR: Failed to serve static file %s: %v\n", r.URL.Path, err)
 		return
 	}
-}
-
-// Export handlers
-func (h *Handler) ExportCSV(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		log.Println("HTTP ERROR: Method not allowed")
-		return
-	}
-	expenses, err := h.storage.GetAllExpenses()
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Failed to retrieve expenses"})
-		log.Printf("HTTP ERROR: Failed to retrieve expenses: %v\n", err)
-		return
-	}
-	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", "attachment; filename=expenses.csv")
-	// write CSV data
-	w.Write([]byte("ID,Name,Category,Amount,Date\n"))
-	for _, expense := range expenses {
-		line := fmt.Sprintf("%s,%s,%s,%.2f,%s\n",
-			expense.ID,
-			strings.ReplaceAll(expense.Name, ",", ";"), // Replace , in name with ;
-			expense.Category,
-			expense.Amount,
-			expense.Date.Format("2006-01-02 15:04:05"),
-		)
-		w.Write([]byte(line))
-	}
-	log.Println("HTTP: Exported expenses to CSV")
-}
-
-func (h *Handler) ExportJSON(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		log.Println("HTTP ERROR: Method not allowed")
-		return
-	}
-	expenses, err := h.storage.GetAllExpenses()
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Failed to retrieve expenses"})
-		log.Printf("HTTP ERROR: Failed to retrieve expenses: %v\n", err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Content-Disposition", "attachment; filename=expenses.json")
-	// Pretty print the JSON data for better readability
-	jsonData, err := json.MarshalIndent(expenses, "", "    ")
-	if err != nil {
-		http.Error(w, "Failed to marshal JSON data", http.StatusInternalServerError)
-		log.Printf("HTTP ERROR: Failed to marshal JSON data: %v\n", err)
-		return
-	}
-	w.Write(jsonData)
-	log.Println("HTTP: Exported expenses to JSON")
 }
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {

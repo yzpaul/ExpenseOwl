@@ -55,7 +55,7 @@
             </div>
         </div>
 
-        <!-- Export Section -->
+        <!-- Import/Export Section -->
         <div class="form-container">
             <h2 align="center">Import/Export Data</h2>
             <div class="export-buttons">
@@ -73,9 +73,9 @@
                     <i class="fa-solid fa-file-code"></i> Import JSON
                 </label>
                 <input type="file" id="jsonFile" accept=".json" style="display: none;">
-                <div id="importMessage" class="form-message"></div>
-                <div id="importSummary" class="import-summary" style="display: none;"></div>
             </div>
+            <div id="importMessage" class="form-message"></div>
+            <div id="importSummary" class="import-summary" style="display: none;"></div>
         </div>
     </div>
 
@@ -340,10 +340,71 @@
             }
         }
 
+        // Import functions
+        async function handleFileUpload(e) {
+            const fileInput = e.target;
+            const file = fileInput.files[0];
+            if (!file) return;
+            const fileType = fileInput.id === 'csvFile' ? 'csv' : 'json';
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                // Show loading message
+                const importMessageDiv = document.getElementById('importMessage');
+                importMessageDiv.textContent = `Uploading ${fileType.toUpperCase()} file...`;
+                importMessageDiv.className = 'form-message';
+                const response = await fetch(`/import/${fileType}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Failed to import ${fileType.toUpperCase()} file`);
+                }
+
+                const result = await response.json();
+                importMessageDiv.textContent = `Successfully imported ${result.imported} expenses!`;
+                importMessageDiv.className = 'form-message success';
+                const summaryDiv = document.getElementById('importSummary');
+                summaryDiv.style.display = 'block';
+                summaryDiv.innerHTML = `
+                    <div><strong>Total processed:</strong> ${result.total_processed}</div>
+                    <div><strong>Successfully imported:</strong> ${result.imported}</div>
+                    <div><strong>Skipped:</strong> ${result.skipped}</div>
+                `;
+                
+                if (result.new_categories && result.new_categories.length > 0) {
+                    summaryDiv.innerHTML += `
+                        <div><strong>New categories added (refreshing in ~4 seconds):</strong> ${result.new_categories.join(', ')}</div>
+                    `;
+                    // Refresh needed to show new categories
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 4000);
+                } else {
+                    setTimeout(() => {
+                        importMessageDiv.textContent = '';
+                        importMessageDiv.className = 'form-message';
+                        summaryDiv.style.display = 'none';
+                    }, 4000);
+                }
+                fileInput.value = '';
+            } catch (error) {
+                console.error(`Error importing ${fileType} file:`, error);
+                const importMessageDiv = document.getElementById('importMessage');
+                importMessageDiv.textContent = `Error: ${error.message}`;
+                importMessageDiv.className = 'form-message error';
+                fileInput.value = '';
+            }
+        }
+
         // Event listeners
         document.getElementById('addCategory').addEventListener('click', addCategory);
         document.getElementById('saveCategories').addEventListener('click', saveCategories);
         document.getElementById('saveCurrency').addEventListener('click', saveCurrency);
+        document.getElementById('csvFile').addEventListener('change', handleFileUpload);
+        document.getElementById('jsonFile').addEventListener('change', handleFileUpload);
         document.getElementById('newCategory').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 addCategory();
