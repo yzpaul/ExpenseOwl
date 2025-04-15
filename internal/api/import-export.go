@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -100,11 +101,12 @@ func (h *Handler) ImportCSV(w http.ResponseWriter, r *http.Request) {
 		log.Println("HTTP ERROR: CSV file is empty or has no data rows")
 		return
 	}
+	stringEscape := regexp.MustCompile(`[^a-zA-Z0-9_ \.]*`)
 	header := records[0]
 	// Find the indices of required columns
 	var nameIdx, categoryIdx, amountIdx, dateIdx int = -1, -1, -1, -1
 	for i, col := range header {
-		colLower := strings.ToLower(strings.TrimSpace(col))
+		colLower := strings.ToLower(strings.TrimSpace(stringEscape.ReplaceAllString(col, "")))
 		switch colLower {
 		case "name":
 			nameIdx = i
@@ -141,12 +143,12 @@ func (h *Handler) ImportCSV(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		// Handle name
-		name := strings.TrimSpace(record[nameIdx])
+		name := strings.TrimSpace(stringEscape.ReplaceAllString(record[nameIdx], ""))
 		if name == "" {
 			name = "-"
 		}
 		// Handle category
-		rawCategory := strings.TrimSpace(record[categoryIdx])
+		rawCategory := strings.TrimSpace(stringEscape.ReplaceAllString(record[categoryIdx], ""))
 		if rawCategory == "" {
 			log.Printf("Warning: Skipping row %d due to missing category\n", i)
 			continue
@@ -159,13 +161,13 @@ func (h *Handler) ImportCSV(w http.ResponseWriter, r *http.Request) {
 			categoryMap[categoryLower] = rawCategory // Add to map for future steps
 			newCategories = append(newCategories, rawCategory)
 		}
-		// Handle amount
+		// Handle amount (skipping regex since parsing as float)
 		amount, err := strconv.ParseFloat(strings.TrimSpace(record[amountIdx]), 64)
 		if err != nil || amount <= 0 {
 			log.Printf("Warning: Skipping row %d due to invalid amount: %s\n", i, record[amountIdx])
 			continue
 		}
-		// Handle date
+		// Handle date (skipping regex since parsing as time)
 		dateStr := strings.TrimSpace(record[dateIdx])
 		var date time.Time
 		var parsedDate bool
@@ -260,6 +262,7 @@ func (h *Handler) ImportJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	stringEscape := regexp.MustCompile(`[^a-zA-Z0-9_ \.]*`)
 	// Get current categories as lowercase to match new ones and replace as needed
 	categoryMap := make(map[string]string)
 	for _, cat := range h.config.Categories {
@@ -273,10 +276,14 @@ func (h *Handler) ImportJSON(w http.ResponseWriter, r *http.Request) {
 		// Handle data
 		if expense.Name == "" {
 			expense.Name = "-"
+		} else {
+			expense.Name = strings.TrimSpace(stringEscape.ReplaceAllString(expense.Name, ""))
 		}
 		if expense.Category == "" {
 			log.Printf("Warning: Skipping expense %d due to missing category\n", i+1)
 			continue
+		} else {
+			expense.Category = strings.TrimSpace(stringEscape.ReplaceAllString(expense.Category, ""))
 		}
 		if expense.Amount <= 0 {
 			log.Printf("Warning: Skipping expense %d due to bad amount: %f\n", i+1, expense.Amount)
