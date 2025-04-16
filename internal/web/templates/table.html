@@ -92,6 +92,7 @@
         let currencySymbol = '$'; // Default to USD
         let currentDate = new Date();
         let allExpenses = [];
+        let startDate = 1
 
         function formatCurrency(amount) {
             let formattedAmount = new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount);
@@ -142,11 +143,46 @@
         }
         function getMonthBounds(date) {
             const localDate = new Date(date);
-            const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), 1);
-            const endLocal = new Date(localDate.getFullYear(), localDate.getMonth() + 1, 0, 23, 59, 59, 999);
-            const start = new Date(startLocal.toISOString());
-            const end = new Date(endLocal.toISOString());
-            return { start, end };
+            // If startDate is 1, return generic month bounds
+            if (startDate === 1) {
+                const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), 1);
+                const endLocal = new Date(localDate.getFullYear(), localDate.getMonth() + 1, 0, 23, 59, 59, 999);
+                const start = new Date(startLocal.toISOString());
+                const end = new Date(endLocal.toISOString());
+                return { start, end };
+            }
+            // If startDate is not 1, need to account for variations in month length
+            let thisMonthStartDate = startDate;
+            let prevMonthStartDate = startDate;
+            let nextMonthStartDate = startDate;
+            // Adjust for variations in current, previous and next months
+            const currentMonth = localDate.getMonth();
+            const currentYear = localDate.getFullYear();
+            const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate(); // last day of current month
+            thisMonthStartDate = Math.min(thisMonthStartDate, daysInCurrentMonth);
+            const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+            prevMonthStartDate = Math.min(prevMonthStartDate, daysInPrevMonth);
+            const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+            const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+            const daysInNextMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
+            nextMonthStartDate = Math.min(nextMonthStartDate, daysInNextMonth);
+            
+            // Return bounds for current period or the previous period
+            if (localDate.getDate() < thisMonthStartDate) {
+                const startLocal = new Date(prevYear, prevMonth, prevMonthStartDate);
+                const endLocal = new Date(currentYear, currentMonth, thisMonthStartDate - 1, 23, 59, 59, 999);
+                const start = new Date(startLocal.toISOString());
+                const end = new Date(endLocal.toISOString());
+                return { start, end };
+            } else {
+                const startLocal = new Date(currentYear, currentMonth, thisMonthStartDate);
+                const endLocal = new Date(nextYear, nextMonth, nextMonthStartDate - 1, 23, 59, 59, 999);
+                const start = new Date(startLocal.toISOString());
+                const end = new Date(endLocal.toISOString());
+                return { start, end };
+            }
         }
         function getMonthExpenses(expenses) {
             const { start, end } = getMonthBounds(currentDate);
@@ -207,6 +243,7 @@
                     `<option value="${cat}">${cat}</option>`
                 ).join('');
                 currencySymbol = config.currency;
+                startDate = config.startDate;
                 const response = await fetch('/expenses');
                 if (!response.ok) throw new Error('Failed to fetch data');
                 allExpenses = await response.json();
@@ -299,10 +336,6 @@
                     messageDiv.textContent = 'Expense added successfully!';
                     messageDiv.className = 'form-message success';
                     document.getElementById('expenseForm').reset();
-                    // const now = new Date();
-                    // document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    // document.getElementById('name').value = 'unnamed';
-                    // Refresh the data
                     await initialize();
                 } else {
                     const error = await response.json();

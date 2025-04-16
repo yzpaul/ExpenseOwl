@@ -43,24 +43,26 @@
             </div>
         </div>
 
-        <!-- Currency Section -->
-        <div class="form-container">
-            <h2 align="center">Currency Settings</h2>
-            <div class="currency-selector">
-                <select id="currencySelect">
-                    <!-- Currencies will be populated here -->
-                </select>
-                <button id="saveCurrency" class="nav-button">Save Currency</button>
+        <div class="settings-container">
+            <!-- Currency Section -->
+            <div class="form-container half-width">
+                <h2 align="center">Currency Settings</h2>
+                <div class="currency-selector">
+                    <select id="currencySelect">
+                        <!-- Currencies will be populated here -->
+                    </select>
+                    <button id="saveCurrency" class="nav-button">Save</button>
+                </div>
                 <div id="currencyMessage" class="form-message"></div>
             </div>
-        </div>
-
-        <!-- Start date section -->
-        <div class="form-container">
-            <h2 align="center">Start date Settings</h2>
-            <div class="start-date-manager">
-                <input type="number" id="startDate" placeholder="1">
-                <button id="saveStartDate" class="nav-button">Save Start date</button>
+            
+            <!-- Start date section -->
+            <div class="form-container half-width">
+                <h2 align="center">Start Date Settings</h2>
+                <div class="start-date-manager">
+                    <input type="number" id="startDate" min="1" max="31" placeholder="1">
+                    <button id="saveStartDate" class="nav-button">Save</button>
+                </div>
                 <div id="startDateMessage" class="form-message"></div>
             </div>
         </div>

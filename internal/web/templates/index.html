@@ -361,25 +361,42 @@
         // Get start and end of month
         function getMonthBounds(date) {
             const localDate = new Date(date);
-            if (startDate <= 1) { // If startDate === 1 show the full month
+            // If startDate is 1, return generic month bounds
+            if (startDate === 1) {
                 const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), 1);
                 const endLocal = new Date(localDate.getFullYear(), localDate.getMonth() + 1, 0, 23, 59, 59, 999);
                 const start = new Date(startLocal.toISOString());
                 const end = new Date(endLocal.toISOString());
                 return { start, end };
             }
-            // If startDate !== 1 show from startDate till next months startDate
-            if (localDate.getDate() < startDate) {
-                // If not past startDate in the month, show previous and current month
-                const startLocal = new Date(localDate.getMonth() === 0 ? localDate.getFullYear()-1 : localDate.getFullYear(), localDate.getMonth() === 0 ? 11 : localDate.getMonth()-1, startDate);
-                const endLocal = new Date(localDate.getFullYear(), localDate.getMonth(), startDate-1, 23, 59, 59, 999);
+            // If startDate is not 1, need to account for variations in month length
+            let thisMonthStartDate = startDate;
+            let prevMonthStartDate = startDate;
+            let nextMonthStartDate = startDate;
+            // Adjust for variations in current, previous and next months
+            const currentMonth = localDate.getMonth();
+            const currentYear = localDate.getFullYear();
+            const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate(); // last day of current month
+            thisMonthStartDate = Math.min(thisMonthStartDate, daysInCurrentMonth);
+            const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+            prevMonthStartDate = Math.min(prevMonthStartDate, daysInPrevMonth);
+            const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+            const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+            const daysInNextMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
+            nextMonthStartDate = Math.min(nextMonthStartDate, daysInNextMonth);
+            
+            // Return bounds for current period or the previous period
+            if (localDate.getDate() < thisMonthStartDate) {
+                const startLocal = new Date(prevYear, prevMonth, prevMonthStartDate);
+                const endLocal = new Date(currentYear, currentMonth, thisMonthStartDate - 1, 23, 59, 59, 999);
                 const start = new Date(startLocal.toISOString());
                 const end = new Date(endLocal.toISOString());
                 return { start, end };
             } else {
-                // If past startDate, show from startDate till now
-                const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), startDate);
-                const endLocal = new Date(localDate.getMonth() === 11 ? localDate.getFullYear()+1 : localDate.getFullYear(), localDate.getMonth() === 11 ? 0 : localDate.getMonth(), startDate-1, 23, 59, 59, 999);
+                const startLocal = new Date(currentYear, currentMonth, thisMonthStartDate);
+                const endLocal = new Date(nextYear, nextMonth, nextMonthStartDate - 1, 23, 59, 59, 999);
                 const start = new Date(startLocal.toISOString());
                 const end = new Date(endLocal.toISOString());
                 return { start, end };
@@ -449,10 +466,6 @@
                     messageDiv.textContent = 'Expense added successfully!';
                     messageDiv.className = 'form-message success';
                     document.getElementById('expenseForm').reset();
-                    // const now = new Date();
-                    // document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    // document.getElementById('name').value = 'unnamed';
-                    // Refresh the data
                     await initialize();
                 } else {
                     const error = await response.json();

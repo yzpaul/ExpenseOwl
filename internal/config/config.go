@@ -199,11 +199,7 @@ func (c *Config) UpdateCurrency(currencyCode string) error {
 
 func (c *Config) UpdateStartDate(startDate int) error {
 	c.mu.Lock()
-	if startDate < 1 || startDate > 31 {
-		c.mu.Unlock()
-		return errors.New("start date not within boundaries")
-	}
-	c.StartDate = startDate
+	c.StartDate = max(min(startDate, 31), 1)
 	c.mu.Unlock()
 	return c.SaveConfig()
 }
