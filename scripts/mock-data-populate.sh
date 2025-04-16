@@ -1,6 +1,6 @@
 #!/bin/bash
 
-categories=("Food" "Groceries" "Travel" "Rent" "Utilities" "Entertainment" "Healthcare" "Shopping" "Miscellaneous")
+categories=("Food" "Groceries" "Travel" "Rent" "Income" "Utilities" "Entertainment" "Healthcare" "Shopping" "Miscellaneous")
 RENT_AMOUNT=2000
 CURRENT_YEAR=$(date +%Y)
 
@@ -22,6 +22,18 @@ for month in {0..11}; do
             \"amount\": $RENT_AMOUNT,
             \"date\": \"$date\"
         }"
+    sleep 0.1
+
+    # Add random income for each month
+    amount=$(random_amount 2000 4000)
+    curl -X PUT http://localhost:8080/expense \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"name\": \"Monthly Income\",
+            \"category\": \"Income\",
+            \"amount\": $amount,
+            \"date\": \"$date\"
+        }"
 
     num_expenses=$((RANDOM % 5 + 8))  # Random number between 8 and 12
 
@@ -30,7 +42,7 @@ for month in {0..11}; do
         date="$CURRENT_YEAR-$(printf "%02d" $((month + 1)))-$(printf "%02d" $day)T14:00:00Z"
         while true; do
             category=${categories[$RANDOM % ${#categories[@]}]}
-            if [ "$category" != "Rent" ]; then
+            if [ "$category" != "Rent" ] && [ "$category" != "Income" ]; then
                 break
             fi
         done

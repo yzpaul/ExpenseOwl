@@ -57,8 +57,12 @@
                     <input type="date" id="date" required>
                     <script>
                         // Set today's date as default
-                        const now = new Date();
-                        document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        const today = new Date();
+                        const year = today.getFullYear();
+                        const month = String(today.getMonth() + 1).padStart(2, '0'); // January is 0
+                        const day = String(today.getDate()).padStart(2, '0');
+                        const formattedDate = `${year}-${month}-${day}`;
+                        document.getElementById('date').value = formattedDate;
                     </script>
                 </div>
                 
@@ -295,9 +299,9 @@
                     messageDiv.textContent = 'Expense added successfully!';
                     messageDiv.className = 'form-message success';
                     document.getElementById('expenseForm').reset();
-                    const now = new Date();
-                    document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    document.getElementById('name').value = 'unnamed';
+                    // const now = new Date();
+                    // document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    // document.getElementById('name').value = 'unnamed';
                     // Refresh the data
                     await initialize();
                 } else {
