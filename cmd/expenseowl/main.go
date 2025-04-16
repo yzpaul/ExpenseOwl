@@ -30,6 +30,8 @@ func runServer(dataPath string) {
 	http.HandleFunc("/settings", handler.ServeSettingsPage)
 	http.HandleFunc("/expense/delete", handler.DeleteExpense)
 	http.HandleFunc("/export/json", handler.ExportJSON)
+	http.HandleFunc("/import/csv", handler.ImportCSV)
+	http.HandleFunc("/import/json", handler.ImportJSON)
 	http.HandleFunc("/export/csv", handler.ExportCSV)
 	http.HandleFunc("/manifest.json", handler.ServeStaticFile)
 	http.HandleFunc("/sw.js", handler.ServeStaticFile)

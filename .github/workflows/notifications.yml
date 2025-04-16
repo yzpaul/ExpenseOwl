@@ -1,13 +1,13 @@
 name: Custom Notifications
 on:
   schedule:
-    - cron: '30 16 * * 6' # 4:30 pm UTC every saturday
+    - cron: '30 17 * * 6' # 5:30 pm UTC every saturday
   issues:
     types: [opened, edited, deleted, closed]
   issue_comment:
     types: [created]
   workflow_run:
-    workflows: ["Release Build"]
+    workflows: ["Release"]
     types: [completed]
   pull_request_target:
     types: [opened, closed, edited, review_requested]

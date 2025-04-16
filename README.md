@@ -34,7 +34,7 @@ That's why I created this project and I use it in my home lab for my expense tra
 - Flat file storage system (`data/expenses.json`)
 - REST API for expense management
 - Single-user focused (mainly for a home lab deployment)
-- CSV and JSON export of all expense data from the UI
+- CSV and JSON export and import of all expense data from the UI
 - Custom categories (and ordering) and currency symbol via app settings
 - Beautiful interface that automatically adapts to system for light/dark theme
 - UUID-based expense identification in the backend
@@ -43,15 +43,22 @@ That's why I created this project and I use it in my home lab for my expense tra
 
 ### Visualization
 
-1. Main dashboard with expense category breakdown (pie chart)
-    - Click on a category to exclude it from the graph and total; click again to add it back.
-    - This helps visualize the breakdown without considering some categories like Rent.
-    - The legend shows categories that make up the the total expenditure of the month.
-2. Table view for detailed expense listing
+1. Main dashboard - category breakdown (pie chart)
+    - Click on a category to exclude it from the graph and total; click again to add it back
+    - This helps visualize the breakdown without considering some categories like Rent
+    - The legend shows categories that make up the the total expenditure of the month
+2. Main dashboard - cashflow indicator
+    - The default settings have an `Income` category, items in which are not considered expenses
+    - If a month has an item in `Income`, ExpenseOwl automatically shows cashflow below the graph
+    - Cashflow shows total income, total expenses, and balance (red or green based on +ve or -ve)
+3. Table view for detailed expense listing
     - This is where you can view individual expenses chronologically and delete them
     - You can use the browser's search to find a name if needed
-3. Month-by-month navigation in both dashboard and table views.
-4. Settings page for configuring custom categories, currency, and exporting data as CSV or JSON.
+4. Month-by-month navigation in both dashboard and table views
+5. Settings page for configuring the application
+    - Reorder, add, or remove custom categories
+    - Select a custom currency to display
+    - Exporting data as CSV or JSON and import data from JSON or CSV
 
 ### Progressive Web App (PWA)
 
@@ -204,6 +211,29 @@ EXPENSE_CATEGORIES="Rent,Food,Transport,Fun,Bills" ./expenseowl
 
 > [!TIP]
 > The environment variables can be set in a compose stack or using `-e` in the command line with a Docker command. However, remember that they are only effective in setting up the configuration for first start. Otherwise, use the settings UI.
+
+### Data Import/Export
+
+ExpenseOwl contains a sophisticated method for importing an exporting expenses. The settings page provides the options for exporting all expense data as JSON or CSV. The same page also allows importing data in both JSON and CSV formats.
+
+**Importing CSV**
+
+ExpenseOwl is meant to make things simple, and importing CSV abides by the same philosophy. ExpenseOwl will accept any CSV file as long as it contains the columns - `name`, `category`, `amount`, and `date`. This is case-insensitive so `name` or `Name` doesn't matter.
+
+> [!TIP]
+> This feature allows ExpenseOwl to use exported data from any tool as long as the required categories are present, making it insanely easy to shift from any provider.
+
+**Importing JSON**
+
+Primarily, ExpenseOwl maintains a JSON-backend for storing both expenses and config data. If you backed up a Docker volume containing the `config.json` and `expenses.json` files, the recommended way to restore is by mounting the same volume (or directory) to your new container. All data will be instantly usable.
+
+However, in case you need to import JSON formatted data from elsewhere (this is generally rare), you can use the import JSON feature.
+
+> [!WARNING]
+> If the time field is not a proper date string (i.e., including time and zone), ExpenseOwl will do a best guess match to set the time to midnight UTC equivalent. This is because time zones are a ... thing.
+
+> [!NOTE]
+> ExpenseOwl goes through every row in the imported data, and will intelligently fail on rows that have invalid or absent data. There is a 10 millisecond delay per record to reduce disk overhead, so please allow appropriate time for ingestion (eg. 10 seconds for 1000 records).
 
 # Contributing
 
