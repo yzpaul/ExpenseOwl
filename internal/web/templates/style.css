@@ -436,6 +436,21 @@ header {
     min-width: 200px;
 }
 
+.start-date-manager {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.start-date-manager input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
 .export-buttons {
     display: flex;
     gap: 1rem;

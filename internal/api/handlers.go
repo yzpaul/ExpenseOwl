@@ -37,6 +37,7 @@ type ExpenseRequest struct {
 type ConfigResponse struct {
 	Categories []string `json:"categories"`
 	Currency   string   `json:"currency"`
+	StartDate  int      `json:"startDate"`
 }
 
 func (h *Handler) GetCategories(w http.ResponseWriter, r *http.Request) {
@@ -48,6 +49,7 @@ func (h *Handler) GetCategories(w http.ResponseWriter, r *http.Request) {
 	response := ConfigResponse{
 		Categories: h.config.Categories,
 		Currency:   h.config.Currency,
+		StartDate:  h.config.StartDate,
 	}
 	writeJSON(w, http.StatusOK, response)
 }
@@ -84,6 +86,23 @@ func (h *Handler) EditCurrency(w http.ResponseWriter, r *http.Request) {
 	h.config.UpdateCurrency(currency)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "success"})
 	log.Println("HTTP: Updated currency")
+}
+
+func (h *Handler) EditStartDate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		log.Println("HTTP ERROR: Method not allowed")
+		return
+	}
+	var startDate int
+	if err := json.NewDecoder(r.Body).Decode(&startDate); err != nil {
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		log.Printf("HTTP ERROR: Failed to decode request body: %v\n", err)
+		return
+	}
+	h.config.UpdateStartDate(startDate)
+	writeJSON(w, http.StatusOK, map[string]string{"status": "success"})
+	log.Println("HTTP: Updated start date")
 }
 
 func (h *Handler) AddExpense(w http.ResponseWriter, r *http.Request) {

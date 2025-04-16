@@ -55,6 +55,16 @@
             </div>
         </div>
 
+        <!-- Start date section -->
+        <div class="form-container">
+            <h2 align="center">Start date Settings</h2>
+            <div class="start-date-manager">
+                <input type="number" id="startDate" placeholder="1">
+                <button id="saveStartDate" class="nav-button">Save Start date</button>
+                <div id="startDateMessage" class="form-message"></div>
+            </div>
+        </div>
+
         <!-- Import/Export Section -->
         <div class="form-container">
             <h2 align="center">Import/Export Data</h2>
@@ -113,6 +123,7 @@
 
         let categories = [];
         let currentCurrency = "";
+        let currentStartDate = 1;
         let draggedItem = null;
 
         // Functions to show message
@@ -315,6 +326,33 @@
             }
         }
 
+        // Start date functions
+        function populateStartDateInput() {
+            const input = document.getElementById("startDate");
+            input.value = currentStartDate;
+        }
+
+        async function saveStartDate() {
+            const startDate = document.getElementById("startDate").value;
+            try {
+                const response = await fetch('/startdate', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: startDate
+                });
+                if (response.ok) {
+                    showMessage('startDateMessage', 'Start date saved successfully', true);
+                } else {
+                    showMessage('startDateMessage', 'Failed to save start date', false);
+                }
+            } catch (error) {
+                console.error('Error saving start date:', error);
+                showMessage('startDateMessage', 'Error saving start date', false);
+            }
+        }
+
         // Initialize the page
         async function initialize() {
             try {
@@ -325,6 +363,7 @@
                 const config = await response.json();
                 categories = [...config.categories];
                 currentCurrency = config.currency;
+                currentStartDate = config.startDate;
                 let currentCurrencyCode = "usd"; // Default
                 for (const [code, symbol] of Object.entries(currencySymbols)) {
                     if (symbol === currentCurrency) {
@@ -334,6 +373,7 @@
                 }
                 renderCategories();
                 populateCurrencySelect();
+                populateStartDateInput();
             } catch (error) {
                 console.error('Failed to initialize settings:', error);
                 showMessage('categoriesMessage', 'Failed to load settings', false);
@@ -373,7 +413,7 @@
                     <div><strong>Successfully imported:</strong> ${result.imported}</div>
                     <div><strong>Skipped:</strong> ${result.skipped}</div>
                 `;
-                
+
                 if (result.new_categories && result.new_categories.length > 0) {
                     summaryDiv.innerHTML += `
                         <div><strong>New categories added (refreshing in ~4 seconds):</strong> ${result.new_categories.join(', ')}</div>
@@ -403,6 +443,7 @@
         document.getElementById('addCategory').addEventListener('click', addCategory);
         document.getElementById('saveCategories').addEventListener('click', saveCategories);
         document.getElementById('saveCurrency').addEventListener('click', saveCurrency);
+        document.getElementById('saveStartDate').addEventListener('click', saveStartDate);
         document.getElementById('csvFile').addEventListener('change', handleFileUpload);
         document.getElementById('jsonFile').addEventListener('change', handleFileUpload);
         document.getElementById('newCategory').addEventListener('keypress', (e) => {
