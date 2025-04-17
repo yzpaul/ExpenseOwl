@@ -35,7 +35,7 @@ That's why I created this project and I use it in my home lab for my expense tra
 - REST API for expense management
 - Single-user focused (mainly for a home lab deployment)
 - CSV and JSON export and import of all expense data from the UI
-- Custom categories (and ordering) and currency symbol via app settings
+- Custom categories, currency symbol, and start date via app settings
 - Beautiful interface that automatically adapts to system for light/dark theme
 - UUID-based expense identification in the backend
 - Self-contained binary and container image to ensure no internet interaction
@@ -58,6 +58,7 @@ That's why I created this project and I use it in my home lab for my expense tra
 5. Settings page for configuring the application
     - Reorder, add, or remove custom categories
     - Select a custom currency to display
+    - Select a custom start date to show expenses for a different period
     - Exporting data as CSV or JSON and import data from JSON or CSV
 
 ### Progressive Web App (PWA)
@@ -211,6 +212,8 @@ EXPENSE_CATEGORIES="Rent,Food,Transport,Fun,Bills" ./expenseowl
 
 > [!TIP]
 > The environment variables can be set in a compose stack or using `-e` in the command line with a Docker command. However, remember that they are only effective in setting up the configuration for first start. Otherwise, use the settings UI.
+
+Similarly, the start date can also be set via the settings UI or the `START_DATE` environment variable.
 
 ### Data Import/Export
 

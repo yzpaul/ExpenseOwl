@@ -420,22 +420,6 @@ header {
     color: var(--text-primary);
 }
 
-.currency-selector {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.currency-selector select {
-    padding: 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    min-width: 200px;
-}
-
 .export-buttons {
     display: flex;
     gap: 1rem;
@@ -538,6 +522,36 @@ header {
     transition: width 0.3s ease;
 }
 
+.settings-container {
+    display: flex;
+    gap: 1rem;
+}
+.form-container.half-width {
+    flex: 1;
+}
+.form-help-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.currency-selector, .start-date-manager {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.start-date-manager input, .currency-selector select {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-width: 200px;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
     .chart-container {
@@ -595,11 +609,6 @@ header {
     .container {
         padding: 1rem;
     }
-
-    .currency-selector {
-        flex-direction: column;
-        align-items: stretch;
-    }
     
     .export-buttons {
         flex-direction: column;
@@ -623,6 +632,10 @@ header {
     }
 
     .import-options {
+        flex-direction: column;
+    }
+
+    .settings-container {
         flex-direction: column;
     }
 }

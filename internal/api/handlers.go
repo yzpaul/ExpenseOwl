@@ -37,6 +37,7 @@ type ExpenseRequest struct {
 type ConfigResponse struct {
 	Categories []string `json:"categories"`
 	Currency   string   `json:"currency"`
+	StartDate  int      `json:"startDate"`
 }
 
 func (h *Handler) GetCategories(w http.ResponseWriter, r *http.Request) {
@@ -48,6 +49,7 @@ func (h *Handler) GetCategories(w http.ResponseWriter, r *http.Request) {
 	response := ConfigResponse{
 		Categories: h.config.Categories,
 		Currency:   h.config.Currency,
+		StartDate:  h.config.StartDate,
 	}
 	writeJSON(w, http.StatusOK, response)
 }
@@ -86,6 +88,23 @@ func (h *Handler) EditCurrency(w http.ResponseWriter, r *http.Request) {
 	log.Println("HTTP: Updated currency")
 }
 
+func (h *Handler) EditStartDate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		log.Println("HTTP ERROR: Method not allowed")
+		return
+	}
+	var startDate int
+	if err := json.NewDecoder(r.Body).Decode(&startDate); err != nil {
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		log.Printf("HTTP ERROR: Failed to decode request body: %v\n", err)
+		return
+	}
+	h.config.UpdateStartDate(startDate)
+	writeJSON(w, http.StatusOK, map[string]string{"status": "success"})
+	log.Println("HTTP: Updated start date")
+}
+
 func (h *Handler) AddExpense(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -118,6 +137,52 @@ func (h *Handler) AddExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, expense)
+}
+
+func (h *Handler) EditExpense(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		log.Println("HTTP ERROR: Method not allowed")
+		return
+	}
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: "ID parameter is required"})
+		log.Println("HTTP ERROR: ID parameter is required")
+		return
+	}
+	var req ExpenseRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		log.Printf("HTTP ERROR: Failed to decode request body: %v\n", err)
+		return
+	}
+	if !req.Date.IsZero() {
+		req.Date = req.Date.UTC()
+	}
+	expense := &config.Expense{
+		ID:       id,
+		Name:     req.Name,
+		Category: req.Category,
+		Amount:   req.Amount,
+		Date:     req.Date,
+	}
+	if err := expense.Validate(); err != nil {
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+		log.Printf("HTTP ERROR: Failed to validate expense: %v\n", err)
+		return
+	}
+	if err := h.storage.EditExpense(expense); err != nil {
+		if err == storage.ErrExpenseNotFound {
+			writeJSON(w, http.StatusNotFound, ErrorResponse{Error: "Expense not found"})
+			return
+		}
+		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Failed to edit expense"})
+		log.Printf("HTTP ERROR: Failed to edit expense: %v\n", err)
+		return
+	}
+	writeJSON(w, http.StatusOK, expense)
+	log.Printf("HTTP: Edited expense with ID %s\n", id)
 }
 
 func (h *Handler) GetExpenses(w http.ResponseWriter, r *http.Request) {

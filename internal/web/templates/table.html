@@ -57,8 +57,12 @@
                     <input type="date" id="date" required>
                     <script>
                         // Set today's date as default
-                        const now = new Date();
-                        document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        const today = new Date();
+                        const year = today.getFullYear();
+                        const month = String(today.getMonth() + 1).padStart(2, '0'); // January is 0
+                        const day = String(today.getDate()).padStart(2, '0');
+                        const formattedDate = `${year}-${month}-${day}`;
+                        document.getElementById('date').value = formattedDate;
                     </script>
                 </div>
                 
@@ -88,6 +92,7 @@
         let currencySymbol = '$'; // Default to USD
         let currentDate = new Date();
         let allExpenses = [];
+        let startDate = 1
 
         function formatCurrency(amount) {
             let formattedAmount = new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount);
@@ -138,11 +143,46 @@
         }
         function getMonthBounds(date) {
             const localDate = new Date(date);
-            const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), 1);
-            const endLocal = new Date(localDate.getFullYear(), localDate.getMonth() + 1, 0, 23, 59, 59, 999);
-            const start = new Date(startLocal.toISOString());
-            const end = new Date(endLocal.toISOString());
-            return { start, end };
+            // If startDate is 1, return generic month bounds
+            if (startDate === 1) {
+                const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), 1);
+                const endLocal = new Date(localDate.getFullYear(), localDate.getMonth() + 1, 0, 23, 59, 59, 999);
+                const start = new Date(startLocal.toISOString());
+                const end = new Date(endLocal.toISOString());
+                return { start, end };
+            }
+            // If startDate is not 1, need to account for variations in month length
+            let thisMonthStartDate = startDate;
+            let prevMonthStartDate = startDate;
+            let nextMonthStartDate = startDate;
+            // Adjust for variations in current, previous and next months
+            const currentMonth = localDate.getMonth();
+            const currentYear = localDate.getFullYear();
+            const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate(); // last day of current month
+            thisMonthStartDate = Math.min(thisMonthStartDate, daysInCurrentMonth);
+            const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+            prevMonthStartDate = Math.min(prevMonthStartDate, daysInPrevMonth);
+            const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+            const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+            const daysInNextMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
+            nextMonthStartDate = Math.min(nextMonthStartDate, daysInNextMonth);
+            
+            // Return bounds for current period or the previous period
+            if (localDate.getDate() < thisMonthStartDate) {
+                const startLocal = new Date(prevYear, prevMonth, prevMonthStartDate);
+                const endLocal = new Date(currentYear, currentMonth, thisMonthStartDate - 1, 23, 59, 59, 999);
+                const start = new Date(startLocal.toISOString());
+                const end = new Date(endLocal.toISOString());
+                return { start, end };
+            } else {
+                const startLocal = new Date(currentYear, currentMonth, thisMonthStartDate);
+                const endLocal = new Date(nextYear, nextMonth, nextMonthStartDate - 1, 23, 59, 59, 999);
+                const start = new Date(startLocal.toISOString());
+                const end = new Date(endLocal.toISOString());
+                return { start, end };
+            }
         }
         function getMonthExpenses(expenses) {
             const { start, end } = getMonthBounds(currentDate);
@@ -175,6 +215,9 @@
                                 <td class="amount">${formatCurrency(expense.amount)}</td>
                                 <td class="date-column">${formatDateFromUTC(expense.date)}</td>
                                 <td>
+                                    <button class="delete-button" onclick="editExpense('${expense.id}', '${expense.name}', '${expense.category}', ${expense.amount}, '${expense.date}')">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
                                     <button class="delete-button" onclick="showDeleteModal('${expense.id}')">
                                         <i class="fa-solid fa-trash-can"></i>
                                     </button>
@@ -192,6 +235,21 @@
             tableContainer.innerHTML = createTable(monthExpenses);
         }
 
+        function editExpense(id, name, category, amount, date) {
+            document.getElementById('name').value = name;
+            document.getElementById('category').value = category;
+            document.getElementById('amount').value = amount;
+            const localDate = new Date(date);
+            const year = localDate.getFullYear();
+            const month = String(localDate.getMonth() + 1).padStart(2, '0');
+            const day = String(localDate.getDate()).padStart(2, '0');
+            document.getElementById('date').value = `${year}-${month}-${day}`;
+            const form = document.getElementById('expenseForm');
+            form.dataset.editId = id;
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.textContent = 'Update Expense';
+        }
+
         async function initialize() {
             try {
                 // Fetch config response
@@ -203,6 +261,7 @@
                     `<option value="${cat}">${cat}</option>`
                 ).join('');
                 currencySymbol = config.currency;
+                startDate = config.startDate;
                 const response = await fetch('/expenses');
                 if (!response.ok) throw new Error('Failed to fetch data');
                 allExpenses = await response.json();
@@ -276,6 +335,8 @@
 
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const form = e.target;
+            const editId = form.dataset.editId;
             const formData = {
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
@@ -283,7 +344,8 @@
                 date: getISODateWithLocalTime(document.getElementById('date').value)
             };
             try {
-                const response = await fetch('/expense', {
+                const url = editId ? `/expense/edit?id=${editId}` : '/expense';
+                const response = await fetch(url, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -292,17 +354,20 @@
                 });
                 const messageDiv = document.getElementById('formMessage');
                 if (response.ok) {
-                    messageDiv.textContent = 'Expense added successfully!';
+                    messageDiv.textContent = editId ? 'Expense updated successfully!' : 'Expense added successfully!';
                     messageDiv.className = 'form-message success';
-                    document.getElementById('expenseForm').reset();
-                    const now = new Date();
-                    document.getElementById('date').valueAsDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    document.getElementById('name').value = 'unnamed';
-                    // Refresh the data
+                    form.reset();
+                    delete form.dataset.editId;
+                    form.querySelector('button[type="submit"]').textContent = 'Add Expense';
                     await initialize();
+                    const today = new Date();
+                    const year = today.getFullYear();
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const day = String(today.getDate()).padStart(2, '0');
+                    document.getElementById('date').value = `${year}-${month}-${day}`;
                 } else {
                     const error = await response.json();
-                    messageDiv.textContent = `Error: ${error.error || 'Failed to add expense'}`;
+                    messageDiv.textContent = `Error: ${error.error || 'Failed to save expense'}`;
                     messageDiv.className = 'form-message error';
                 }
                 // Clear message after 3 seconds
@@ -311,9 +376,9 @@
                     messageDiv.className = 'form-message';
                 }, 3000);
             } catch (error) {
-                console.error('Error adding expense:', error);
+                console.error('Error saving expense:', error);
                 const messageDiv = document.getElementById('formMessage');
-                messageDiv.textContent = 'Error: Failed to add expense';
+                messageDiv.textContent = 'Error: Failed to save expense';
                 messageDiv.className = 'form-message error';
             }
         });

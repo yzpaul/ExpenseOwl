@@ -23,6 +23,7 @@ type Storage interface {
 	SaveExpense(expense *config.Expense) error
 	GetAllExpenses() ([]*config.Expense, error)
 	DeleteExpense(id string) error
+	EditExpense(expense *config.Expense) error
 }
 
 type jsonStore struct {
@@ -95,6 +96,29 @@ func (s *jsonStore) DeleteExpense(id string) error {
 	}
 	data.Expenses = newExpenses
 	log.Printf("Deleted expense with ID %s\n", id)
+	return s.writeFile(data)
+}
+
+func (s *jsonStore) EditExpense(expense *config.Expense) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	data, err := s.readFile()
+	if err != nil {
+		return fmt.Errorf("failed to read storage file: %v", err)
+	}
+	found := false
+	for i, exp := range data.Expenses {
+		if exp.ID == expense.ID {
+			expense.Date = exp.Date
+			data.Expenses[i] = expense
+			found = true
+			break
+		}
+	}
+	if !found {
+		return ErrExpenseNotFound
+	}
+	log.Printf("Edited expense with ID %s\n", expense.ID)
 	return s.writeFile(data)
 }
 

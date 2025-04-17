@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -16,12 +17,14 @@ type Config struct {
 	StoragePath string
 	Categories  []string
 	Currency    string
+	StartDate   int
 	mu          sync.RWMutex
 }
 
 type FileConfig struct {
 	Categories []string `json:"categories"`
 	Currency   string   `json:"currency"`
+	StartDate  int      `json:"startDate"`
 }
 
 var defaultCategories = []string{
@@ -104,6 +107,7 @@ func NewConfig(dataPath string) *Config {
 		ServerPort:  "8080",
 		StoragePath: finalPath,
 		Categories:  defaultCategories,
+		StartDate:   1,
 		Currency:    "$", // Default to USD
 	}
 	configPath := filepath.Join(finalPath, "config.json")
@@ -123,9 +127,19 @@ func NewConfig(dataPath string) *Config {
 			}
 			log.Println("Using custom currency from environment variables")
 		}
+		if envStartDate := strings.ToLower(os.Getenv("START_DATE")); envStartDate != "" {
+			startDate, err := strconv.Atoi(envStartDate)
+			if err != nil {
+				log.Println("START_DATE is not a number, using default (1)")
+			} else {
+				cfg.StartDate = startDate
+				log.Println("using custom start date from environment variables")
+			}
+		}
 	} else if fileConfig, err := loadConfigFile(configPath); err == nil {
 		cfg.Categories = fileConfig.Categories
 		cfg.Currency = fileConfig.Currency
+		cfg.StartDate = fileConfig.StartDate
 		log.Println("Loaded configuration from file")
 	}
 	cfg.SaveConfig()
@@ -151,6 +165,7 @@ func (c *Config) SaveConfig() error {
 	fileConfig := FileConfig{
 		Categories: c.Categories,
 		Currency:   c.Currency,
+		StartDate:  c.StartDate,
 	}
 	data, err := json.MarshalIndent(fileConfig, "", "    ")
 	if err != nil {
@@ -174,6 +189,13 @@ func (c *Config) UpdateCurrency(currencyCode string) error {
 		c.mu.Unlock()
 		return errors.New("invalid currency code")
 	}
+	c.mu.Unlock()
+	return c.SaveConfig()
+}
+
+func (c *Config) UpdateStartDate(startDate int) error {
+	c.mu.Lock()
+	c.StartDate = max(min(startDate, 31), 1)
 	c.mu.Unlock()
 	return c.SaveConfig()
 }
