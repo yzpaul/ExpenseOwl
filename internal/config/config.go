@@ -132,12 +132,8 @@ func NewConfig(dataPath string) *Config {
 			if err != nil {
 				log.Println("START_DATE is not a number, using default (1)")
 			} else {
-				if startDate < 1 || startDate > 31 {
-					log.Println("START_DATE is not within the boundaries, using default (1)")
-				} else {
-					cfg.StartDate = startDate
-					log.Println("using custom start date from environment variables")
-				}
+				cfg.StartDate = startDate
+				log.Println("using custom start date from environment variables")
 			}
 		}
 	} else if fileConfig, err := loadConfigFile(configPath); err == nil {
