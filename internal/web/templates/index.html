@@ -165,7 +165,6 @@
         function formatCurrency(amount) {
             let formattedAmount = new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount);
 
-
             // check zero decimal currencies
             let zeroDecimalCurrencies = new Set(['jpy', 'vnd', '₫', 'idr']);
             if (zeroDecimalCurrencies.has(currency)) {
