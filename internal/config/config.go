@@ -40,35 +40,35 @@ var defaultCategories = []string{
 	"Income",
 }
 
-var currencySymbols = map[string]string{
-	"usd": "$",    // US Dollar
-	"eur": "€",    // Euro
-	"gbp": "£",    // British Pound
-	"jpy": "¥",    // Japanese Yen
-	"cny": "¥",    // Chinese Yuan
-	"krw": "₩",    // Korean Won
-	"inr": "₹",    // Indian Rupee
-	"rub": "₽",    // Russian Ruble
-	"brl": "R$",   // Brazilian Real
-	"zar": "R",    // South African Rand
-	"aed": "AED",  // UAE Dirham
-	"aud": "A$",   // Australian Dollar
-	"cad": "C$",   // Canadian Dollar
-	"chf": "Fr",   // Swiss Franc
-	"hkd": "HK$",  // Hong Kong Dollar
-	"sgd": "S$",   // Singapore Dollar
-	"thb": "฿",    // Thai Baht
-	"try": "₺",    // Turkish Lira
-	"mxn": "Mex$", // Mexican Peso
-	"php": "₱",    // Philippine Peso
-	"pln": "zł",   // Polish Złoty
-	"sek": "kr",   // Swedish Krona
-	"nzd": "NZ$",  // New Zealand Dollar
-	"dkk": "kr.",  // Danish Krone
-	"idr": "Rp",   // Indonesian Rupiah
-	"ils": "₪",    // Israeli New Shekel
-	"vnd": "₫",    // Vietnamese Dong
-	"myr": "RM",   // Malaysian Ringgit
+var currencies = []string{
+	"usd",    // US Dollar
+	"eur",    // Euro
+	"gbp",    // British Pound
+	"jpy",    // Japanese Yen
+	"cny",    // Chinese Yuan
+	"krw",    // Korean Won
+	"inr",    // Indian Rupee
+	"rub",    // Russian Ruble
+	"brl",   // Brazilian Real
+	"zar",    // South African Rand
+	"aed",  // UAE Dirham
+	"aud",   // Australian Dollar
+	"cad",   // Canadian Dollar
+	"chf",   // Swiss Franc
+	"hkd",  // Hong Kong Dollar
+	"sgd",   // Singapore Dollar
+	"thb",    // Thai Baht
+	"try",    // Turkish Lira
+	"mxn", // Mexican Peso
+	"php",    // Philippine Peso
+	"pln",   // Polish Złoty
+	"sek",   // Swedish Krona
+	"nzd",  // New Zealand Dollar
+	"dkk",  // Danish Krone
+	"idr",   // Indonesian Rupiah
+	"ils",    // Israeli New Shekel
+	"vnd",    // Vietnamese Dong
+	"myr",   // Malaysian Ringgit
 }
 
 type Expense struct {
@@ -77,6 +77,15 @@ type Expense struct {
 	Category string    `json:"category"`
 	Amount   float64   `json:"amount"`
 	Date     time.Time `json:"date"`
+}
+
+func ValidCurrency(item string) bool {
+	for _, s := range currencies {
+		if s == item {
+			return true
+		}
+	}
+	return false
 }
 
 func (e *Expense) Validate() error {
@@ -108,7 +117,7 @@ func NewConfig(dataPath string) *Config {
 		StoragePath: finalPath,
 		Categories:  defaultCategories,
 		StartDate:   1,
-		Currency:    "$", // Default to USD
+		Currency:    "usd", // Default to USD
 	}
 	configPath := filepath.Join(finalPath, "config.json")
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
@@ -122,8 +131,8 @@ func NewConfig(dataPath string) *Config {
 			log.Println("Using custom categories from environment variables")
 		}
 		if envCurrency := strings.ToLower(os.Getenv("CURRENCY")); envCurrency != "" {
-			if symbol, exists := currencySymbols[envCurrency]; exists {
-				cfg.Currency = symbol
+			if ValidCurrency(envCurrency) {
+				cfg.Currency = envCurrency;
 			}
 			log.Println("Using custom currency from environment variables")
 		}
@@ -183,8 +192,8 @@ func (c *Config) UpdateCategories(categories []string) error {
 
 func (c *Config) UpdateCurrency(currencyCode string) error {
 	c.mu.Lock()
-	if symbol, exists := currencySymbols[strings.ToLower(currencyCode)]; exists {
-		c.Currency = symbol
+	if ValidCurrency(currencyCode) {
+		c.Currency = currencyCode
 	} else {
 		c.mu.Unlock()
 		return errors.New("invalid currency code")
