@@ -176,6 +176,9 @@ func (h *Handler) ImportCSV(w http.ResponseWriter, r *http.Request) {
 			"2006-01-02 15:04:05", // SQL format
 			"2006-01-02",          // ISO date
 			"01/02/2006",          // US date
+			"01/02/06",            // US date (short year)
+			"1/2/2006",            // US date (no leading zero)
+			"1/2/06",              // US date (short year no leading zero)
 			"02/01/2006",          // European date
 			"Jan 2, 2006",         // Month name format
 			"2 Jan 2006",          // European month name
@@ -183,7 +186,7 @@ func (h *Handler) ImportCSV(w http.ResponseWriter, r *http.Request) {
 			"2006-01-02T15:04:05", // ISO without timezone
 		}
 		for _, format := range dateFormats {
-			if d, err := time.Parse(format, dateStr); err == nil {
+			if d, err := time.ParseInLocation(format, dateStr, time.Local); err == nil {
 				date = d.UTC()
 				parsedDate = true
 				break
