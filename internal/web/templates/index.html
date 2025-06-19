@@ -110,7 +110,7 @@
         </div>
     </div>
     <script>
-        let currencySymbol = '$'; // Default to USD
+        let currency = 'usd'; // Default to USD
         let startDate = 1;
         let pieChart = null;
         let currentDate = new Date();
@@ -122,6 +122,38 @@
             '#FFBE0B', '#FF006E', '#8338EC', '#3A86FF', 
             '#FB5607', '#38B000', '#9B5DE5', '#F15BB5'
         ];
+
+        const currencySymbols = {
+            usd: "$",    // US Dollar
+            eur: "€",    // Euro
+            gbp: "£",    // British Pound
+            jpy: "¥",    // Japanese Yen
+            cny: "¥",    // Chinese Yuan
+            krw: "₩",    // Korean Won
+            inr: "₹",    // Indian Rupee
+            rub: "₽",    // Russian Ruble
+            brl: "R$",   // Brazilian Real
+            zar: "R",    // South African Rand
+            aed: "AED",  // UAE Dirham
+            aud: "A$",   // Australian Dollar
+            cad: "C$",   // Canadian Dollar
+            chf: "Fr",   // Swiss Franc
+            hkd: "HK$",  // Hong Kong Dollar
+            sgd: "S$",   // Singapore Dollar
+            thb: "฿",    // Thai Baht
+            try: "₺",    // Turkish Lira
+            mxn: "Mex$", // Mexican Peso
+            php: "₱",    // Philippine Peso
+            pln: "zł",   // Polish Złoty
+            sek: "kr",   // Swedish Krona
+            nzd: "NZ$",  // New Zealand Dollar
+            dkk: "kr.",  // Danish Krone
+            idr: "Rp",   // Indonesian Rupiah
+            ils: "₪",    // Israeli New Shekel
+            vnd: "₫",    // Vietnamese Dong
+            myr: "RM",   // Malaysian Ringgit
+        };
+
         function assignCategoryColors(categories) {
             categories.forEach((category, index) => {
                 if (!categoryColors[category]) {
@@ -132,12 +164,20 @@
 
         function formatCurrency(amount) {
             let formattedAmount = new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount);
-            // Currencies commonly used after the amount
-            const postfixCurrencies = new Set(['kr', 'kr.', 'Fr', 'zł']);
-            if (postfixCurrencies.has(currencySymbol)) {
-                return `${formattedAmount} ${currencySymbol}`;
+
+            // check zero decimal currencies
+            let zeroDecimalCurrencies = new Set(['jpy', 'vnd', '₫', 'idr']);
+            if (zeroDecimalCurrencies.has(currency)) {
+                formattedAmount = new Intl.NumberFormat('en-US', {maximumFractionDigits: 0}).format(amount);
             }
-            return `${currencySymbol} ${formattedAmount}`;
+
+            // Currencies commonly used after the amount
+            const postfixCurrencies = new Set(['sek', 'dkk', 'chf', 'pln']);
+            if (postfixCurrencies.has(currency)) {
+                return `${formattedAmount} ${currencySymbols[currency]}`;
+            }
+
+            return `${currencySymbols[currency]} ${formattedAmount}`;
         }
 
         function calculateCategoryBreakdown(expenses) {
@@ -310,7 +350,7 @@
                 categorySelect.innerHTML = config.categories.map(cat => 
                     `<option value="${cat}">${cat}</option>`
                 ).join('');
-                currencySymbol = config.currency;
+                currency = config.currency;
                 startDate = config.startDate;
                 // Fetch expenses
                 const response = await fetch('/expenses');
