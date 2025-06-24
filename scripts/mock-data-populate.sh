@@ -1,13 +1,16 @@
 #!/bin/bash
 
 categories=("Food" "Groceries" "Travel" "Rent" "Income" "Utilities" "Entertainment" "Healthcare" "Shopping" "Miscellaneous")
-RENT_AMOUNT=2000
+RENT_AMOUNT=-2000
 CURRENT_YEAR=$(date +%Y)
 
 random_amount() {
     min=$1
     max=$2
-    echo "scale=2; $min + ($max - $min) * $RANDOM / 32767" | bc
+    awk -v min=$min -v max=$max -v r=$RANDOM 'BEGIN {
+        srand();
+        printf "%.2f\n", min + (max - min) * r / 32767
+    }'
 }
 
 for month in {0..11}; do
@@ -35,7 +38,7 @@ for month in {0..11}; do
             \"date\": \"$date\"
         }"
 
-    num_expenses=$((RANDOM % 5 + 8))  # Random number between 8 and 12
+    num_expenses=8 #$((RANDOM % 5 + 8))  # Random number between 8 and 12
 
     for ((i=1; i<=num_expenses; i++)); do
         day=$((RANDOM % 28 + 1))
@@ -82,15 +85,16 @@ for month in {0..11}; do
                 ;;
         esac
 
+        # expense amounts should be negative
         curl -X PUT http://localhost:8080/expense \
             -H "Content-Type: application/json" \
             -d "{
                 \"name\": \"$name\",
                 \"category\": \"$category\",
-                \"amount\": $amount,
+                \"amount\": -$amount, 
                 \"date\": \"$date\"
             }"
-        sleep 0.1
+        #sleep 0.1
     done
 done
 

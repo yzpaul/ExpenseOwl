@@ -208,7 +208,7 @@
                 data: {
                     labels: categoryData.map(c => c.category),
                     datasets: [{
-                        data: categoryData.map(c => c.total),
+                        data: categoryData.map(c => Math.abs(c.total)),
                         backgroundColor: categoryData.map(c => categoryColors[c.category]),
                         borderColor: '#1a1a1a',
                         borderWidth: 1
@@ -235,70 +235,81 @@
                 }
             });
         }
-
         function updateLegend(categoryData) {
-            const legendContainer = document.getElementById('customLegend');
-            legendContainer.innerHTML = ''; // Clear previous legend
-            // Get unique categories from current month's expenses only
-            const monthExpenses = getMonthExpenses(allExpenses);
-            const currentMonthCategories = [...new Set(monthExpenses
-                .filter(exp => exp.category !== "Income") // Exclude Income from legend
-                .map(exp => exp.category))];
-            // Create a map of active category data for easy lookup
-            const categoryMap = new Map(categoryData.map(cat => [cat.category, cat]));
-            
-            currentMonthCategories.sort((a, b) => {
-                const dataA = categoryMap.get(a);
-                const dataB = categoryMap.get(b);
-                if (dataA && dataB) return dataB.total - dataA.total;
-                if (dataA) return -1;
-                if (dataB) return 1;
-                return a.localeCompare(b);
-            }).forEach(category => {
-                const item = document.createElement('div');
-                item.className = `legend-item${disabledCategories.has(category) ? ' disabled' : ''}`;
-                const color = categoryColors[category];
-                const categoryData = categoryMap.get(category);
-                const percentage = categoryData ? ` (${categoryData.percentage.toFixed(1)}%)` : '';
-                const amount = categoryData ? formatCurrency(categoryData.total) : '';
-                item.innerHTML = `
-                    <div class="color-box" style="background-color: ${color}"></div>
-                    <div class="legend-text">
-                        <span>${category}${percentage}</span>
-                        <span class="amount">${amount}</span>
-                    </div>
-                `;
-                item.addEventListener('click', () => toggleCategory(category));
-                legendContainer.appendChild(item);
-            });
+    const legendContainer = document.getElementById('customLegend');
+    legendContainer.innerHTML = '';
 
-            // Calculate total of only the enabled categories
-            const activeTotalExpenses = monthExpenses
-                .filter(exp => exp.category !== "Income" && !disabledCategories.has(exp.category))
-                .reduce((sum, exp) => sum + exp.amount, 0);
+    const monthExpenses = getMonthExpenses(allExpenses);
+    const currentMonthCategories = [...new Set(monthExpenses
+        .filter(exp => exp.category !== "Income")
+        .map(exp => exp.category))];
 
-            // Add totals section
-            const totalsHtml = `
-                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>Total:</span>
-                        <span class="amount">
-                            ${formatCurrency(activeTotalExpenses)}
-                        </span>
-                    </div>
-                </div>
-            `;
-            legendContainer.insertAdjacentHTML('beforeend', totalsHtml);
-        }
+    const categoryMap = new Map(categoryData.map(cat => [cat.category, cat]));
 
-        function toggleCategory(category) {
-            if (disabledCategories.has(category)) {
-                disabledCategories.delete(category);
-            } else {
-                disabledCategories.add(category);
-            }
-            updateChartAndLegend();
-        }
+    // Filter categories to enabled only for percentage calculation
+    const enabledCategories = currentMonthCategories.filter(cat => !disabledCategories.has(cat));
+
+    // Calculate total absolute sum of enabled categories
+    const totalForPercent = enabledCategories.reduce((sum, cat) => {
+        const data = categoryMap.get(cat);
+        return sum + (data ? Math.abs(data.total) : 0);
+    }, 0);
+
+    // Sort by absolute value of totals for better display, but preserve sign
+    enabledCategories.sort((a, b) => {
+        const dataA = categoryMap.get(a);
+        const dataB = categoryMap.get(b);
+        if (dataA && dataB) return Math.abs(dataB.total) - Math.abs(dataA.total);
+        if (dataA) return -1;
+        if (dataB) return 1;
+        return a.localeCompare(b);
+    }).forEach(category => {
+        const item = document.createElement('div');
+        item.className = `legend-item${disabledCategories.has(category) ? ' disabled' : ''}`;
+        const color = categoryColors[category];
+        const catData = categoryMap.get(category);
+
+        // Calculate percentage relative to totalForPercent
+        const percentage = catData && totalForPercent > 0
+            ? ` (${((Math.abs(catData.total) / totalForPercent) * 100).toFixed(1)}%)`
+            : '';
+
+        const amount = catData ? formatCurrency(catData.total) : '';
+        item.innerHTML = `
+            <div class="color-box" style="background-color: ${color}"></div>
+            <div class="legend-text">
+                <span>${category}${percentage}</span>
+                <span class="amount">${amount}</span>
+            </div>
+        `;
+        //item.addEventListener('click', () => toggleCategory(category));
+        legendContainer.appendChild(item);
+    });
+
+    // Total of only enabled, non-Income categories
+    const activeTotalExpenses = monthExpenses
+        .filter(exp => exp.category !== "Income" && !disabledCategories.has(exp.category))
+        .reduce((sum, exp) => sum + exp.amount, 0);
+
+    const totalsHtml = `
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Total:</span>
+                <span class="amount">${formatCurrency(activeTotalExpenses)}</span>
+            </div>
+        </div>
+    `;
+    legendContainer.insertAdjacentHTML('beforeend', totalsHtml);
+}
+
+        // function toggleCategory(category) {
+        //     if (disabledCategories.has(category)) {
+        //         disabledCategories.delete(category);
+        //     } else {
+        //         disabledCategories.add(category);
+        //     }
+        //     updateChartAndLegend();
+        // }
 
         async function initialize() {
             try {

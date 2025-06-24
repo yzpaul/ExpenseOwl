@@ -86,9 +86,9 @@ func (e *Expense) Validate() error {
 	if e.Category == "" {
 		return errors.New("category is required")
 	}
-	if e.Amount <= 0 {
-		return errors.New("amount must be greater than 0")
-	}
+	// if e.Amount <= 0 {
+	// 	return errors.New("amount must be greater than 0")
+	// }
 	return nil
 }
 

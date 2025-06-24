@@ -192,21 +192,72 @@
             }).sort((a, b) => new Date(b.date) - new Date(a.date));
         }
 
+        let currentSort = { column: 'date', direction: 'desc' };
+
+function sortByColumn(column) {
+    const monthExpenses = getMonthExpenses(allExpenses);
+
+    if (currentSort.column === column) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSort.column = column;
+        currentSort.direction = 'asc';
+    }
+
+    const sorted = [...monthExpenses].sort((a, b) => {
+        let aVal = a[column];
+        let bVal = b[column];
+
+        if (column === 'amount') {
+            aVal = parseFloat(aVal);
+            bVal = parseFloat(bVal);
+        } else if (column === 'date') {
+            aVal = new Date(aVal);
+            bVal = new Date(bVal);
+        } else {
+            aVal = aVal.toLowerCase?.() || '';
+            bVal = bVal.toLowerCase?.() || '';
+        }
+
+        if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    tableContainer.innerHTML = createTable(sorted);
+}
+
+function getSortArrow(column) {
+    if (currentSort.column !== column) return '';
+    return currentSort.direction === 'asc' ? '▲' : '▼';
+}
+
         function createTable(expenses) {
             if (expenses.length === 0) {
                 return `<div class="no-data">No expenses recorded for this month</div>`;
             }
             return `
+            <style>
+                th {
+                    cursor: pointer;
+                    user-select: none;
+                }
+
+                th:hover {
+                    background-color: rgba(128, 128, 128, 0.1); /* Light gray overlay */
+                }
+            </style>
+
                 <table class="expense-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Amount</th>
-                            <th class="date-header">Date</th>
-                            <th></th>
-                        </tr>
-                    </thead>
+                <thead>
+                <tr>
+                    <th onclick="sortByColumn('name')">Name ${getSortArrow('name')}</th>
+                    <th onclick="sortByColumn('category')">Category ${getSortArrow('category')}</th>
+                    <th onclick="sortByColumn('amount')">Amount ${getSortArrow('amount')}</th>
+                    <th class="date-header" onclick="sortByColumn('date')">Date ${getSortArrow('date')}</th>
+                    <th></th>
+                </tr>
+                </thead>
                     <tbody>
                         ${expenses.map(expense => `
                             <tr>

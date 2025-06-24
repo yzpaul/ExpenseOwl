@@ -416,6 +416,14 @@
                     <div><strong>Skipped:</strong> ${result.skipped}</div>
                 `;
 
+                if (result.skipped_details && result.skipped_details.length > 0) {
+                    const skippedList = result.skipped_details.map(msg => `<li>${msg}</li>`).join("");
+                    summaryDiv.innerHTML += `
+                        <div><strong>Skipped Details:</strong></div>
+                        <ul style="margin-left: 1em; color: darkred;">${skippedList}</ul>
+                    `;
+                }
+
                 if (result.new_categories && result.new_categories.length > 0) {
                     summaryDiv.innerHTML += `
                         <div><strong>New categories added (refreshing in ~4 seconds):</strong> ${result.new_categories.join(', ')}</div>
