@@ -1,9 +1,10 @@
 #!/bin/sh
+set -e  # Exit immediately on any command failure (except where overridden)
 
 # Stop and remove the old container if it exists
 echo "Stopping and removing old container..."
-docker stop expenseowl 2>/dev/null
-docker rm expenseowl 2>/dev/null
+docker stop expenseowl 2>/dev/null || echo "No running container to stop"
+docker rm expenseowl 2>/dev/null || echo "No existing container to remove"
 
 # Rebuild the Docker image
 echo "Building Docker image..."

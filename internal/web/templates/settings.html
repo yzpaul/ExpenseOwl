@@ -15,6 +15,8 @@
                 <a href="/">
                     <img src="/pwa/icon-512.png" alt="ExpenseOwl Logo" height="85" style="vertical-align: middle; margin-right: 20px;">
                 </a>
+                <span height="85" style="vertical-align: middle; margin-right: 20px;">v33.21p</span>
+
                 <a href="/" class="view-button" data-tooltip="Dashboard">
                     <i class="fa-solid fa-chart-pie"></i>
                 </a>
@@ -38,7 +40,7 @@
                     <input type="text" id="newCategory" placeholder="Add new category">
                     <button id="addCategory" class="nav-button">Add</button>
                 </div>
-                <button id="saveCategories" class="nav-button">Save Categories</button>
+                <!-- <button id="saveCategories" class="nav-button">Save Categories</button> -->
                 <div id="categoriesMessage" class="form-message"></div>
             </div>
         </div>
@@ -250,7 +252,7 @@
             return false;
         }
 
-        function addCategory() {
+        async function addCategory() {
             const input = document.getElementById('newCategory');
             const category = input.value.trim();
             if (category && !categories.includes(category)) {
@@ -260,6 +262,7 @@
             } else if (categories.includes(category)) {
                 showMessage('categoriesMessage', 'Category already exists', false);
             }
+            await saveCategories()
         }
 
         function removeCategory(index) {
@@ -422,6 +425,7 @@
                         <div><strong>Skipped Details:</strong></div>
                         <ul style="margin-left: 1em; color: darkred;">${skippedList}</ul>
                     `;
+                    alert(JSON.stringify(skippedList))
                 }
 
                 if (result.new_categories && result.new_categories.length > 0) {

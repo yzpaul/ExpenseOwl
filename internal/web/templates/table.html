@@ -7,6 +7,25 @@
     <link rel="stylesheet" href="/style.css">
     <title>ExpenseOwl Table</title>
 </head>
+
+<!--template to edit record-->
+<template id="editFormTemplate">
+    <tr class="edit-row">
+        <td colspan="5">
+            <form class="edit-expense-form" onsubmit="submitEdit(event)">
+                <input type="hidden" name="id">
+                <input type="text" name="name" required>
+                <input type="text" name="category" required>
+                <input type="number" name="amount" step="0.01" required>
+                <input type="date" name="date" required>
+                <button type="submit">Save</button>
+                <button type="button" onclick="cancelEdit()">Cancel</button>
+            </form>
+        </td>
+    </tr>
+</template>
+<!--end template-->
+
 <body>
     <div class="container">
         <header>
@@ -15,6 +34,7 @@
                 <a href="/">
                     <img src="/pwa/icon-512.png" alt="ExpenseOwl Logo" height="85" style="vertical-align: middle; margin-right: 20px;">
                 </a>
+                <span height="85" style="vertical-align: middle; margin-right: 20px;">v33.21p</span>
                 <a href="/" class="view-button" data-tooltip="Dashboard">
                     <i class="fa-solid fa-chart-pie"></i>
                 </a>
@@ -49,7 +69,7 @@
                 
                 <div class="form-group">
                     <label for="amount">Amount</label>
-                    <input type="number" id="amount" step="0.01" min="0.01" required>
+                    <input type="number" id="amount" step="0.01" min="-999999" required>
                 </div>
                 
                 <div class="form-group">
@@ -131,6 +151,7 @@
                 year: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
+                timeZone: 'America/New_York',
                 timeZoneName: 'short'
             });
         }
@@ -286,20 +307,55 @@ function getSortArrow(column) {
             tableContainer.innerHTML = createTable(monthExpenses);
         }
 
-        function editExpense(id, name, category, amount, date) {
-            document.getElementById('name').value = name;
-            document.getElementById('category').value = category;
-            document.getElementById('amount').value = amount;
-            const localDate = new Date(date);
-            const year = localDate.getFullYear();
-            const month = String(localDate.getMonth() + 1).padStart(2, '0');
-            const day = String(localDate.getDate()).padStart(2, '0');
-            document.getElementById('date').value = `${year}-${month}-${day}`;
-            const form = document.getElementById('expenseForm');
-            form.dataset.editId = id;
-            const submitButton = form.querySelector('button[type="submit"]');
-            submitButton.textContent = 'Update Expense';
-        }
+let currentEditRow = null;
+
+function editExpense(id, name, category, amount, date) {
+    // Remove existing edit row if any
+    cancelEdit();
+
+    const row = document.querySelector(`button[onclick*="${id}"]`).closest('tr');
+    const editTemplate = document.getElementById('editFormTemplate').content.cloneNode(true);
+    const editRow = editTemplate.querySelector('tr');
+    const form = editRow.querySelector('form');
+
+    form.elements.id.value = id;
+    form.elements.name.value = name;
+    form.elements.category.value = category;
+    form.elements.amount.value = amount;
+    form.elements.date.value = new Date(date).toISOString().slice(0, 10);
+
+    row.parentNode.insertBefore(editRow, row.nextSibling);
+    currentEditRow = editRow;
+}
+
+function cancelEdit() {
+    if (currentEditRow) {
+        currentEditRow.remove();
+        currentEditRow = null;
+    }
+}
+
+function submitEdit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const updatedExpense = {
+        id: form.elements.id.value,
+        name: form.elements.name.value,
+        category: form.elements.category.value,
+        amount: parseFloat(form.elements.amount.value),
+        date: form.elements.date.value // ISO date string
+    };
+
+    const index = allExpenses.findIndex(e => e.id === updatedExpense.id);
+    if (index !== -1) {
+        allExpenses[index] = updatedExpense;
+    }
+
+    cancelEdit();
+    updateTable();
+}
+
+
 
         async function initialize() {
             try {
