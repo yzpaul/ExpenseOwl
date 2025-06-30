@@ -335,25 +335,53 @@ function cancelEdit() {
     }
 }
 
-function submitEdit(event) {
+async function submitEdit(event) {
     event.preventDefault();
     const form = event.target;
-    const updatedExpense = {
-        id: form.elements.id.value,
+
+    const editId = form.elements.id.value;
+    const formData = {
         name: form.elements.name.value,
         category: form.elements.category.value,
         amount: parseFloat(form.elements.amount.value),
-        date: form.elements.date.value // ISO date string
+        date: getISODateWithLocalTime(form.elements.date.value)
     };
 
-    const index = allExpenses.findIndex(e => e.id === updatedExpense.id);
-    if (index !== -1) {
-        allExpenses[index] = updatedExpense;
-    }
+    try {
+        const url = editId ? `/expense/edit?id=${editId}` : '/expense';
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
 
-    cancelEdit();
-    updateTable();
+        const messageDiv = document.getElementById('formMessage') || createFormMessage();
+        if (response.ok) {
+            messageDiv.textContent = 'Expense updated successfully!';
+            messageDiv.className = 'form-message success';
+
+            cancelEdit();
+            await initialize();
+        } else {
+            const error = await response.json();
+            messageDiv.textContent = `Error: ${error.error || 'Failed to save expense'}`;
+            messageDiv.className = 'form-message error';
+        }
+
+        setTimeout(() => {
+            messageDiv.textContent = '';
+            messageDiv.className = 'form-message';
+        }, 3000);
+    } catch (error) {
+        console.error('Error saving expense:', error);
+        const messageDiv = document.getElementById('formMessage') || createFormMessage();
+        messageDiv.textContent = 'Error: Failed to save expense';
+        messageDiv.className = 'form-message error';
+    }
 }
+
 
 
 
@@ -440,55 +468,7 @@ function submitEdit(event) {
             }
         });
 
-        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const editId = form.dataset.editId;
-            const formData = {
-                name: document.getElementById('name').value,
-                category: document.getElementById('category').value,
-                amount: parseFloat(document.getElementById('amount').value),
-                date: getISODateWithLocalTime(document.getElementById('date').value)
-            };
-            try {
-                const url = editId ? `/expense/edit?id=${editId}` : '/expense';
-                const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-                const messageDiv = document.getElementById('formMessage');
-                if (response.ok) {
-                    messageDiv.textContent = editId ? 'Expense updated successfully!' : 'Expense added successfully!';
-                    messageDiv.className = 'form-message success';
-                    form.reset();
-                    delete form.dataset.editId;
-                    form.querySelector('button[type="submit"]').textContent = 'Add Expense';
-                    await initialize();
-                    const today = new Date();
-                    const year = today.getFullYear();
-                    const month = String(today.getMonth() + 1).padStart(2, '0');
-                    const day = String(today.getDate()).padStart(2, '0');
-                    document.getElementById('date').value = `${year}-${month}-${day}`;
-                } else {
-                    const error = await response.json();
-                    messageDiv.textContent = `Error: ${error.error || 'Failed to save expense'}`;
-                    messageDiv.className = 'form-message error';
-                }
-                // Clear message after 3 seconds
-                setTimeout(() => {
-                    messageDiv.textContent = '';
-                    messageDiv.className = 'form-message';
-                }, 3000);
-            } catch (error) {
-                console.error('Error saving expense:', error);
-                const messageDiv = document.getElementById('formMessage');
-                messageDiv.textContent = 'Error: Failed to save expense';
-                messageDiv.className = 'form-message error';
-            }
-        });
+
         document.addEventListener('DOMContentLoaded', initialize);
     </script>
 </body>
