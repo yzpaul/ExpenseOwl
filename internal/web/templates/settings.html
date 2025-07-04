@@ -425,7 +425,7 @@
                         <div><strong>Skipped Details:</strong></div>
                         <ul style="margin-left: 1em; color: darkred;">${skippedList}</ul>
                     `;
-                    alert(JSON.stringify(skippedList))
+                    //alert(JSON.stringify(skippedList))
                 }
 
                 if (result.new_categories && result.new_categories.length > 0) {
@@ -436,13 +436,15 @@
                     setTimeout(() => {
                         window.location.reload();
                     }, 4000);
-                } else {
-                    setTimeout(() => {
-                        importMessageDiv.textContent = '';
-                        importMessageDiv.className = 'form-message';
-                        summaryDiv.style.display = 'none';
-                    }, 4000);
-                }
+                } 
+                //DONT hide import messages
+                // else {
+                //     setTimeout(() => {
+                //         importMessageDiv.textContent = '';
+                //         importMessageDiv.className = 'form-message';
+                //         summaryDiv.style.display = 'none';
+                //     }, 4000);
+                // }
                 fileInput.value = '';
             } catch (error) {
                 console.error(`Error importing ${fileType} file:`, error);
