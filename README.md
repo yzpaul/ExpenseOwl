@@ -59,4 +59,5 @@ Used for building and publishing the Docker image.
 
 ## ✅ Project Status
 
-This is a TypeScript fork of ExpenseOwl with a focus on credit-card statement imports (transaction are assumed to be negative as opposed to bank account imports in the original where a transaction is positive)
+This is a TypeScript fork of ExpenseOwl with a focus on credit-card statement imports 
+(transaction are assumed to be negative as opposed to bank account imports in the original where a transaction is positive)
