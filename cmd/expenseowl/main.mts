@@ -37,7 +37,7 @@ async function runServer(dataPath: string) {
           "/import/json": handler.importJSON,
           "/export/csv": handler.exportCSV,
           "/manifest.json": handler.ServeStaticFile,
-          "/sw.js": handler.ServeStaticFile,
+          "/sw.js": handler.ServeStaticFile, 
           "/style.css": handler.ServeStaticFile,
           "/favicon.ico": handler.ServeStaticFile,
           "/chart.min.js": handler.ServeStaticFile,
