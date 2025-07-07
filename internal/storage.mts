@@ -100,7 +100,7 @@ export class JsonStore implements Storage {
   async getAllExpenses(): Promise<Expense[]> {
     // readFile is async but no need to lock read because we do locking on write
     const data = await this.readFile();
-    console.log("Retrieved all expenses");
+    //console.log("Retrieved all expenses");
     return data.expenses;
   }
 

@@ -1,6 +1,6 @@
 # 📊 ExpenseOwl Credit Card Fork
 
-This is a fork of [ExpenseOwl](https://github.com/yzpaul/ExpenseOwl) tailored to support credit card-style expense tracking with mock data population, Docker deployment, and local development support.
+This is a fork of [ExpenseOwl](https://github.com/Tanq16/ExpenseOwl) in TypeScript tailored to support credit card-style expense tracking with mock data population, Docker deployment, and local development support.
 
 ---
 
@@ -55,36 +55,8 @@ Used for local testing USING DOCKER and demo data population.
 
 Used for building and publishing the Docker image.
 
-```sh
-#!/bin/bash
-set -e
-
-echo "Stopping and removing old container..."
-docker stop expenseowl 2>/dev/null || echo "No running container to stop"
-docker rm expenseowl 2>/dev/null || echo "No existing container to remove"
-
-echo "Building Docker image..."
-docker build -t expenseowl-custom .
-
-echo "Starting container..."
-docker run -d -p 8080:8080 --name expenseowl expenseowl-custom
-
-echo "Waiting for container to initialize..."
-sleep 5
-
-# Tag and push to Docker Hub
-LOCAL_IMAGE="expenseowl-custom"
-REMOTE_IMAGE="yzpaul/expenseowl-creditcard:latest"
-
-docker tag $LOCAL_IMAGE $REMOTE_IMAGE
-docker push $REMOTE_IMAGE
-```
-
 ---
 
 ## ✅ Project Status
 
-This fork is actively maintained with a focus on Docker-first deployment and ease of local testing using realistic seeded data.
-
-Feel free to fork, open issues, or contribute!
-
+This is a TypeScript fork of ExpenseOwl with a focus on credit-card statement imports (transaction are assumed to be negative as opposed to bank account imports in the original where a transaction is positive)

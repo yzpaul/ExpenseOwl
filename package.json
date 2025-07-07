@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx --watch cmd/expenseowl/main.mts",
     "docker": "sh ./scripts/restart.sh",
-    "publish":"npm run docker && sh ./scripts/docker-deploy.sh",
+    "publish":"sh ./scripts/docker-deploy.sh",
 
     "build": "tsc",
     "start": "node dist/cmd/expenseowl/main.mjs",
@@ -20,7 +20,7 @@
     "fastify",
     "typescript"
   ],
-  "author": "Your Name",
+  "author": "Paul Weiler",
   "license": "MIT",
   "dependencies": {
     "csv-parse": "^5.6.0",
