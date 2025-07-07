@@ -1,25 +1,28 @@
-FROM golang:alpine AS builder
+# Build stage: compile TypeScript
+FROM node:18-alpine AS builder
 
 WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm install
 
 COPY . .
+# Copy templates folder into dist (static files)
+COPY internal/web/templates ./dist/internal/web/templates
 
-# Build the application
-RUN go build -o expenseowl ./cmd/expenseowl
+RUN npm run build
 
-# Use a minimal alpine image for running
-FROM alpine:latest
+# Production stage
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Create data directory if not exists
-RUN mkdir -p /app/data
+COPY package.json package-lock.json* ./
+RUN npm install --production
 
-# Copy the binary from builder
-COPY --from=builder /app/expenseowl .
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/cmd ./cmd
 
-# Expose the default port
 EXPOSE 8080
 
-# Run the server
-CMD ["./expenseowl"]
+CMD ["node", "dist/cmd/expenseowl/main.mjs"]

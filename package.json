@@ -1,0 +1,46 @@
+{
+  "name": "expenseowl",
+  "version": "1.0.0",
+  "description": "Expense management API server",
+  "main": "cmd/expenseowl/main.mjs",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx --watch cmd/expenseowl/main.mts",
+    "docker": "sh ./scripts/restart.sh",
+    "publish":"npm run docker && sh ./scripts/docker-deploy.sh",
+
+    "build": "tsc",
+    "start": "node dist/cmd/expenseowl/main.mjs",
+    "lint": "eslint . --ext .ts",
+    "test": "jest"
+  },
+  "keywords": [
+    "expense",
+    "api",
+    "fastify",
+    "typescript"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "csv-parse": "^5.6.0",
+    "fastify": "^5.4.0",
+    "fastify-cors": "^6.1.0",
+    "fastify-formbody": "^5.3.0",
+    "fastify-multipart": "^5.4.0",
+    "fastify-plugin": "^5.0.1",
+    "multiparty": "^4.2.3",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/csv-parse": "^1.2.5",
+    "@types/multiparty": "^4.2.1",
+    "@types/node": "^24.0.10",
+    "eslint": "^8.57.1",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
