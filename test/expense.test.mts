@@ -1,11 +1,10 @@
 import request from "supertest";
-import { Config } from "../internal/config.mjs";
-import { JsonStore } from "../internal/storage.mjs";
-import { Handler } from "../internal/api/handlers.mjs";
+// import { Config } from "../internal/config.mjs";
+// import { JsonStore } from "../internal/storage.mjs";
+// import { Handler } from "../internal/api/handlers.mjs";
 import { createServer } from "../internal/createServer.mjs";
 import { IncomingMessage, Server, ServerResponse } from "http";
 
-// Properly type the HTTP server
 let server: Server<typeof IncomingMessage, typeof ServerResponse>;
 let port=8002
 
@@ -17,6 +16,8 @@ beforeAll(async () => {
 
   // Use the createServer util, ensure it returns a `http.Server`
   server = await createServer("../data/",port);
+  await new Promise<void>((resolve) => server.listen(port, resolve));
+
 });
 
 afterAll(async() => {

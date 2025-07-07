@@ -31,6 +31,7 @@ export async function createServer(dataPath: string,port=8081) {
     "/export/csv": handler.exportCSV.bind(handler),
     "/manifest.json": handler.ServeStaticFile.bind(handler),
     "/sw.js": handler.ServeStaticFile.bind(handler),
+    "/table.js": handler.ServeStaticFile.bind(handler),
     "/style.css": handler.ServeStaticFile.bind(handler),
     "/favicon.ico": handler.ServeStaticFile.bind(handler),
     "/chart.min.js": handler.ServeStaticFile.bind(handler),
@@ -74,6 +75,5 @@ export async function createServer(dataPath: string,port=8081) {
   });
 
   //make sure listening before returning
-    await new Promise<void>((resolve) => server.listen(cfg.ServerPort, resolve));
   return server;
 }
