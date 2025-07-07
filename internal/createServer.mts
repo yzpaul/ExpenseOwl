@@ -7,8 +7,10 @@ import { JsonStore } from "./storage.mjs";
 import { Handler } from "./api/handlers.mjs";
 import { ServeTemplate } from "./web/embed.mjs";
 
-export async function createServer(dataPath: string) {
+export async function createServer(dataPath: string,port=8081) {
   const cfg = new Config(dataPath);
+  cfg.ServerPort=port.toString()
+
   const storage = await JsonStore.new(path.join(cfg.StoragePath, "expenses.json"));
   const handler = new Handler(storage, cfg);
 
@@ -59,7 +61,6 @@ export async function createServer(dataPath: string) {
 
       const routeHandler = routes[pathname];
       if (routeHandler) {
-        console.log(`H!!`,pathname)
         await routeHandler(req, res);
       } else {
         res.statusCode = 404;
@@ -72,5 +73,7 @@ export async function createServer(dataPath: string) {
     }
   });
 
+  //make sure listening before returning
+    await new Promise<void>((resolve) => server.listen(cfg.ServerPort, resolve));
   return server;
 }

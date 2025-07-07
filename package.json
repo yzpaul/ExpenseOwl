@@ -37,7 +37,6 @@
     "@types/multiparty": "^4.2.1",
     "@types/node": "^24.0.10",
     "@types/supertest": "^6.0.3",
-    "cheerio": "^1.1.0",
     "eslint": "^8.57.1",
     "jest": "^30.0.4",
     "jest-environment-node": "^30.0.4",
