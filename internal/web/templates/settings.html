@@ -265,9 +265,10 @@
             await saveCategories()
         }
 
-        function removeCategory(index) {
+        async function removeCategory(index) {
             categories.splice(index, 1);
             renderCategories();
+            await saveCategories()
         }
 
         async function saveCategories() {
@@ -457,7 +458,6 @@
 
         // Event listeners
         document.getElementById('addCategory').addEventListener('click', addCategory);
-        document.getElementById('saveCategories').addEventListener('click', saveCategories);
         document.getElementById('saveCurrency').addEventListener('click', saveCurrency);
         document.getElementById('saveStartDate').addEventListener('click', saveStartDate);
         document.getElementById('csvFile').addEventListener('change', handleFileUpload);
