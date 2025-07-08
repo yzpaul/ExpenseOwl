@@ -9,6 +9,7 @@ import { ServeTemplate } from "./web/embed.mjs";
 
 export async function createServer(dataPath: string,port=8081) {
   const cfg = new Config(dataPath);
+  cfg.initialize();
   cfg.ServerPort=port.toString()
 
   const storage = await JsonStore.new(path.join(cfg.StoragePath, "expenses.json"));

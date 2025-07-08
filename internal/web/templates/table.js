@@ -3,6 +3,7 @@ let currentDate = new Date();
 let allExpenses = [];
 let startDate = 1;
 let currentEditRow = null;
+let config;
 
 function formatCurrency(amount) {
   let formattedAmount = new Intl.NumberFormat("en-US", {
@@ -216,74 +217,94 @@ function addSplitRow(splitBtn) {
   const mainForm = splitBtn.closest("form");
   const mainRow = splitBtn.closest("tr");
 
-  const originalAmount = parseFloat(mainForm.elements.amount.value || 0);
-  mainForm.dataset.originalAmount = originalAmount;
+  // Store original amount only once
+  if (!mainForm.dataset.originalAmount) {
+    mainForm.dataset.originalAmount = parseFloat(mainForm.elements.amount.value || 0);
+  }
 
-  // Clone form for split row
+  // Clone the form template
   const splitForm = mainForm.cloneNode(true);
+  const categorySelect = splitForm.elements.category;
+  populateCategorySelect(categorySelect)
   splitForm.dataset.split = "true";
-
-  // Remove buttons and errors from cloned form
-  splitForm.querySelector(".form-actions")?.remove();
-  splitForm.querySelector(".form-error")?.remove();
-
-  // Reset split form fields
   splitForm.elements.id.value = "";
-  splitForm.elements.amount.value = "0";
   splitForm.elements.name.value = mainForm.elements.name.value + " (split)";
+  splitForm.elements.amount.value = "0";
 
-  // Insert new split row
+  // Clear any error
+  splitForm.querySelector(".form-error").textContent = "";
+
+  // 🔒 Hide the button group for this split
+  const buttonGroup = splitForm.querySelectorAll(".form-group")[4]; // the 5th form-group (buttons)
+  if (buttonGroup) buttonGroup.style.display = "none";
+
+  // Insert after last split or main
+  let insertAfter = mainRow;
+  while (
+    insertAfter.nextElementSibling &&
+    insertAfter.nextElementSibling.classList.contains("edit-row") &&
+    insertAfter.nextElementSibling.querySelector("form")?.dataset.split === "true"
+  ) {
+    insertAfter = insertAfter.nextElementSibling;
+  }
+
   const splitRow = document.createElement("tr");
   splitRow.classList.add("edit-row");
+
   const td = document.createElement("td");
   td.colSpan = 5;
-  td.appendChild(splitForm);
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "form-container";
+  wrapper.appendChild(splitForm);
+  td.appendChild(wrapper);
   splitRow.appendChild(td);
-  mainRow.parentNode.insertBefore(splitRow, mainRow.nextSibling);
 
-  // Setup sync & validation on input for both amount fields
-  function onAmountChange() {
-    validateAndSyncSplitRows(mainForm, splitForm);
-  }
-
-  mainForm.elements.amount.addEventListener("input", onAmountChange);
-  splitForm.elements.amount.addEventListener("input", onAmountChange);
+  insertAfter.parentNode.insertBefore(splitRow, insertAfter.nextElementSibling);
 }
 
-function validateAndSyncSplitRows(mainForm, splitForm) {
-  const originalTotal = parseFloat(mainForm.dataset.originalAmount || 0);
-  const mainAmountField = mainForm.elements.amount;
-  const splitAmountField = splitForm.elements.amount;
-  const errorDiv = mainForm.querySelector(".form-error");
-  errorDiv.textContent = "Original amount before split: "+originalTotal;
 
-  let mainAmount = parseFloat(mainAmountField.value || 0);
-  let splitAmount = parseFloat(splitAmountField.value || 0);
+// function validateAndSyncSplitRows(mainForm, splitForm) {
+//   const originalTotal = parseFloat(mainForm.dataset.originalAmount || 0);
+//   const mainAmountField = mainForm.elements.amount;
+//   const splitAmountField = splitForm.elements.amount;
+//   const errorDiv = mainForm.querySelector(".form-error");
+//   errorDiv.textContent = "Original amount before split: "+originalTotal;
 
-  if (isNaN(mainAmount)) mainAmount = 0;
-  if (isNaN(splitAmount)) splitAmount = 0;
+//   let mainAmount = parseFloat(mainAmountField.value || 0);
+//   let splitAmount = parseFloat(splitAmountField.value || 0);
 
-  // Auto-adjust the other field if one changes to keep total consistent
-  const activeElement = document.activeElement;
-  if (activeElement === mainAmountField) {
-    // Adjust split amount so total matches originalTotal
-    splitAmountField.value = (originalTotal - mainAmount).toFixed(2);
-  } else if (activeElement === splitAmountField) {
-    // Adjust main amount so total matches originalTotal
-    mainAmountField.value = (originalTotal - splitAmount).toFixed(2);
-  }
+//   if (isNaN(mainAmount)) mainAmount = 0;
+//   if (isNaN(splitAmount)) splitAmount = 0;
 
-  return true;
-}
+//   // Auto-adjust the other field if one changes to keep total consistent
+//   const activeElement = document.activeElement;
+//   if (activeElement === mainAmountField) {
+//     // Adjust split amount so total matches originalTotal
+//     splitAmountField.value = (originalTotal - mainAmount).toFixed(2);
+//   } else if (activeElement === splitAmountField) {
+//     // Adjust main amount so total matches originalTotal
+//     mainAmountField.value = (originalTotal - splitAmount).toFixed(2);
+//   }
+
+//   return true;
+// }
 
 function cancelEdit() {
   if (currentEditRow) {
-    // Check if the next sibling is a split row before removing currentEditRow
-    const nextRow = currentEditRow.nextElementSibling;
-    if (nextRow && nextRow.classList.contains("edit-row")) {
-      nextRow.remove();
+    // Remove all following split rows
+    let next = currentEditRow.nextElementSibling;
+    while (
+      next &&
+      next.classList.contains("edit-row") &&
+      next.querySelector("form")?.dataset.split === "true"
+    ) {
+      const toRemove = next;
+      next = next.nextElementSibling;
+      toRemove.remove();
     }
 
+    // Remove the main edit row
     currentEditRow.remove();
     currentEditRow = null;
   }
@@ -294,8 +315,12 @@ function editExpense(id, name, category, amount, date) {
 
   const row = document.querySelector(`button[onclick*="${id}"]`).closest("tr");
   const editTemplate = document.getElementById("editFormTemplate").content.cloneNode(true);
+  
   const editRow = editTemplate.querySelector("tr");
   const form = editRow.querySelector("form");
+
+  const categorySelect = form.elements.category;
+  populateCategorySelect(categorySelect);
 
   form.elements.id.value = id;
   form.elements.name.value = name;
@@ -309,77 +334,91 @@ function editExpense(id, name, category, amount, date) {
   row.parentNode.insertBefore(editRow, row.nextSibling);
   currentEditRow = editRow;
 }
-
 async function submitEdit(event) {
   event.preventDefault();
   const form = event.target;
   const parentRow = form.closest("tr");
-  const splitRow = parentRow.nextElementSibling;
   const errorDiv = form.querySelector(".form-error");
   errorDiv.textContent = "";
 
-  const formData = {
-    name: form.elements.name.value,
-    category: form.elements.category.value,
-    amount: parseFloat(form.elements.amount.value),
-    date: getISODateWithLocalTime(form.elements.date.value),
-  };
+  const originalTotal = parseFloat(form.dataset.originalAmount);
 
-  if (splitRow && splitRow.classList.contains("edit-row")) {
-    const splitForm = splitRow.querySelector("form");
+  // Collect main form data
+  const updates = [{
+    url: `/expense/edit?id=${form.elements.id.value}`,
+    body: {
+      name: form.elements.name.value,
+      category: form.elements.category.value,
+      amount: parseFloat(form.elements.amount.value),
+      date: getISODateWithLocalTime(form.elements.date.value),
+    }
+  }];
 
-    const splitData = {
-      name: splitForm.elements.name.value,
-      category: splitForm.elements.category.value,
-      amount: parseFloat(splitForm.elements.amount.value),
-      date: getISODateWithLocalTime(splitForm.elements.date.value),
-    };
+  let totalAmount = updates[0].body.amount;
 
-    try {
-      await Promise.all([
-        fetch(`/expense/edit?id=${form.elements.id.value}`, {
+  // Look for up to 20 following split rows
+  let nextRow = parentRow.nextElementSibling;
+  let splitCount = 0;
+  while (nextRow && nextRow.classList.contains("edit-row") && splitCount < 20) {
+    const splitForm = nextRow.querySelector("form");
+    if (!splitForm || !splitForm.dataset.split) break;
+
+    const amount = parseFloat(splitForm.elements.amount.value);
+    totalAmount += amount;
+
+    updates.push({
+      url: "/expense",
+      body: {
+        name: splitForm.elements.name.value,
+        category: splitForm.elements.category.value,
+        amount,
+        date: getISODateWithLocalTime(splitForm.elements.date.value),
+      }
+    });
+
+    nextRow = nextRow.nextElementSibling;
+    splitCount++;
+  }
+
+  if (Math.abs(totalAmount - originalTotal) > 0.005) {
+    errorDiv.textContent = `Total must equal original amount: ${originalTotal.toFixed(2)} (now: ${totalAmount.toFixed(2)})`;
+    return;
+  }
+
+  try {
+    await Promise.all(
+      updates.map(update =>
+        fetch(update.url, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }),
-        fetch("/expense", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(splitData),
-        }),
-      ]);
-      cancelEdit();
-      await initialize();
-    } catch (error) {
-      errorDiv.textContent = "Failed to save split expenses.";
-      console.error(error);
-    }
-  } else {
-    try {
-      await fetch(`/expense/edit?id=${form.elements.id.value}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      cancelEdit();
-      await initialize();
-    } catch (error) {
-      errorDiv.textContent = "Failed to save expense.";
-      console.error(error);
-    }
+          body: JSON.stringify(update.body),
+        })
+      )
+    );
+    cancelEdit();
+    await initialize();
+  } catch (error) {
+    errorDiv.textContent = "Failed to save expenses.";
+    console.error(error);
   }
 }
+
+function populateCategorySelect(selectElement) {
+  selectElement.innerHTML = config.categories
+    .map((cat) => `<option value="${cat}">${cat}</option>`)
+    .join("");
+}
+
 
 async function initialize() {
   try {
     // Fetch config
     const configResponse = await fetch("/categories");
     if (!configResponse.ok) throw new Error("Failed to fetch configuration");
-    const config = await configResponse.json();
+    config = await configResponse.json();
     const categorySelect = document.getElementById("category");
-    categorySelect.innerHTML = config.categories
-      .map((cat) => `<option value="${cat}">${cat}</option>`)
-      .join("");
+    populateCategorySelect(categorySelect);
+
     currencySymbol = config.currency;
     startDate = config.startDate;
 
