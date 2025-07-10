@@ -1,8 +1,3 @@
-BUG
-* category defaults overwrite existing on save???
-* 3+ splits not delete on close and not add properly
-* in splits category is not a dropdown
-
 TODO
 * pass selected month between screens
 * Add "year so far" pie chart

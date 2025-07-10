@@ -7,7 +7,10 @@ import { JsonStore } from "./storage.mjs";
 import { Handler } from "./api/handlers.mjs";
 import { ServeTemplate } from "./web/embed.mjs";
 
-export async function createServer(dataPath: string,port=8081) {
+export async function createServer(dataPath: string,port=8081):Promise<[
+  http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
+  number
+]> {
   const cfg = new Config(dataPath);
   cfg.initialize();
   cfg.ServerPort=port.toString()
@@ -75,6 +78,5 @@ export async function createServer(dataPath: string,port=8081) {
     }
   });
 
-  //make sure listening before returning
-  return server;
+  return [server,port];
 }

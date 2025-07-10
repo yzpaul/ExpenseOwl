@@ -60,10 +60,10 @@
             
             <!-- Start date section -->
             <div class="form-container half-width">
-                <h2 align="center">Start Date Settings</h2>
+                <h2 align="center">Import Settings</h2>
                 <div class="start-date-manager">
                     <input type="number" id="startDate" min="1" max="31" placeholder="1">
-                    <button id="saveStartDate" class="nav-button">Save</button>
+                    <button id="saveImportOptBtn" class="nav-button">Save</button>
                 </div>
                 <div id="startDateMessage" class="form-message"></div>
             </div>
@@ -338,24 +338,27 @@
             input.value = currentStartDate;
         }
 
-        async function saveStartDate() {
-            const startDate = document.getElementById("startDate").value;
+        async function saveImportOpt() {
+            const importOpt_doBankCategories = document.getElementById("importOpt_doBankCategories").checked;
             try {
-                const response = await fetch('/startdate', {
+                const body={
+                    importOpt_doBankCategories
+                }
+                const response = await fetch('/importOpt/edit', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: startDate
+                    body
                 });
                 if (response.ok) {
-                    showMessage('startDateMessage', 'Start date saved successfully', true);
+                    showMessage('startDateMessage', 'Import options saved successfully', true);
                 } else {
-                    showMessage('startDateMessage', 'Failed to save start date', false);
+                    showMessage('startDateMessage', 'Failed to save import options', false);
                 }
             } catch (error) {
-                console.error('Error saving start date:', error);
-                showMessage('startDateMessage', 'Error saving start date', false);
+                console.error('Error saving import options:', error);
+                showMessage('startDateMessage', 'Error saving import options', false);
             }
         }
 
@@ -459,7 +462,7 @@
         // Event listeners
         document.getElementById('addCategory').addEventListener('click', addCategory);
         document.getElementById('saveCurrency').addEventListener('click', saveCurrency);
-        document.getElementById('saveStartDate').addEventListener('click', saveStartDate);
+        document.getElementById('saveImportOptBtn').addEventListener('click', saveImportOpt);
         document.getElementById('csvFile').addEventListener('change', handleFileUpload);
         document.getElementById('jsonFile').addEventListener('change', handleFileUpload);
         document.getElementById('newCategory').addEventListener('keypress', (e) => {
