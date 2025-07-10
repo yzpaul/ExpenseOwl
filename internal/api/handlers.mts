@@ -6,6 +6,7 @@ import { Config,Expense } from "../config.mjs";
 import { Storage, ErrExpenseNotFound } from "../storage.mjs";
 import { ServeTemplate, ServeStatic } from "../web/embed.mjs";
 import { ExportCSV, ExportJSON, ImportCSV, ImportJSON } from "./import-export.mjs";
+import { ImportOpt } from "../interfaces/apiInterfaces.mjs";
 
 interface ErrorResponse {
   error: string;
@@ -21,7 +22,7 @@ interface ExpenseRequest {
 interface ConfigResponse {
   categories: string[];
   currency: string;
-  startDate: number;
+  importOpt: ImportOpt;
 }
 
 export class Handler {
@@ -77,7 +78,7 @@ export class Handler {
     const response: ConfigResponse = {
       categories: this.config.Categories,
       currency: this.config.Currency,
-      startDate: this.config.StartDate,
+      importOpt: this.config.importOpt,
     };
     this.writeJSON(res, 200, response);
   }
@@ -118,7 +119,7 @@ export class Handler {
     }
   }
 
-  EditStartDate= async(req: IncomingMessage, res: ServerResponse)=> {
+  EditImportOpt= async(req: IncomingMessage, res: ServerResponse)=> {
     if (req.method !== "PUT") {
       res.statusCode = 405;
       res.end("Method not allowed");
@@ -126,8 +127,8 @@ export class Handler {
       return;
     }
     try {
-      const startDate = await this.parseJSON<number>(req);
-      this.config.UpdateStartDate(startDate);
+      const imp = await this.parseJSON<ImportOpt>(req);
+      this.config.UpdateImportOpt(imp);
       this.writeJSON(res, 200, { status: "success" });
       console.log("HTTP: Updated start date");
     } catch (err) {

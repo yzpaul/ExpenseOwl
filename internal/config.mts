@@ -1,6 +1,7 @@
 // internal/config.mts
 import fs from "fs/promises";
 import path from "path";
+import { ImportOpt } from "./interfaces/apiInterfaces.mjs";
 
 export class Expense {
   id: string;
@@ -33,9 +34,9 @@ export class Expense {
 }
 
 export interface FileConfig {
+  importOpt: ImportOpt;
   categories: string[];
   currency: string;
-  startDate: number;
 }
 
 const defaultCategories = [
@@ -82,21 +83,14 @@ const currencySymbols: Record<string, string> = {
   myr: "RM", // Malaysian Ringgit
 };
 
-function max(a: number, b: number): number {
-  return a > b ? a : b;
-}
-function min(a: number, b: number): number {
-  return a < b ? a : b;
-}
-
 export class Config {
   ServerPort = "8080";
   StoragePath: string;
   Categories: string[];
   Currency: string;
-  StartDate: number;
 
   private _writeLock = Promise.resolve();
+  importOpt: ImportOpt;
 
   constructor(dataPath: string) {
     if (dataPath === "data") {
@@ -106,7 +100,7 @@ export class Config {
     }
     this.Categories = [...defaultCategories];
     this.Currency = "$";
-    this.StartDate = 1;
+    this.importOpt = {doBlankCategories:false};
   }
 
   async initialize(): Promise<void> {
@@ -125,7 +119,7 @@ export class Config {
 
       this.Categories = fileConfig.categories || this.Categories;
       this.Currency = fileConfig.currency || this.Currency;
-      this.StartDate = fileConfig.startDate || this.StartDate;
+      this.importOpt = fileConfig.importOpt || this.importOpt;
       console.log("Loaded configuration from file");
     } catch {
       // File doesn't exist or can't parse
@@ -143,14 +137,13 @@ export class Config {
         console.log("Using custom currency from environment variables");
       }
 
-      const envStartDate = process.env.START_DATE;
-      if (envStartDate) {
-        const startDateNum = Number(envStartDate);
-        if (Number.isNaN(startDateNum)) {
-          console.log("START_DATE is not a number, using default (1)");
+      const envImportOpt = JSON.parse(process.env.IMPORT_OPT||`{}`);
+      if (envImportOpt) {
+        if (Object.keys(envImportOpt).length==0) {
+          console.log("IMPORT_OPT is not a number, using default");
         } else {
-          this.StartDate = startDateNum;
-          console.log("Using custom start date from environment variables");
+          this.importOpt = envImportOpt;
+          console.log("Using IMPORT_OPT date from environment variables",this.importOpt);
         }
       }
 
@@ -165,7 +158,7 @@ export class Config {
       const fileConfig: FileConfig = {
         categories: this.Categories,
         currency: this.Currency,
-        startDate: this.StartDate,
+        importOpt: this.importOpt,
       };
       const data = JSON.stringify(fileConfig, null, 4);
       await fs.writeFile(configPath, data, "utf8");
@@ -187,8 +180,8 @@ export class Config {
     await this.SaveConfig();
   }
 
-  async UpdateStartDate(startDate: number): Promise<void> {
-    this.StartDate = max(min(startDate, 31), 1);
+  async UpdateImportOpt(imp: ImportOpt): Promise<void> {
+    this.importOpt=imp
     await this.SaveConfig();
   }
 }

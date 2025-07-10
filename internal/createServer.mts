@@ -22,7 +22,7 @@ export async function createServer(dataPath: string,port=8081):Promise<[
     "/categories": handler.GetCategories.bind(handler),
     "/categories/edit": handler.EditCategories.bind(handler),
     "/currency": handler.EditCurrency.bind(handler),
-    "/startdate": handler.EditStartDate.bind(handler),
+    "/importOpt/edit": handler.EditImportOpt.bind(handler),
     "/expense": handler.AddExpense.bind(handler),
     "/expenses": handler.GetExpenses.bind(handler),
     "/expense/edit": handler.EditExpense.bind(handler),
