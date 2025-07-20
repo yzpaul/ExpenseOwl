@@ -19,8 +19,8 @@ export async function createServer(dataPath: string,port=8081):Promise<[
   const handler = new Handler(storage, cfg);
 
   const routes: Record<string, (req: IncomingMessage, res: ServerResponse) => Promise<void>> = {
-    "/categories": handler.GetCategories.bind(handler),
-    "/categories/edit": handler.EditCategories.bind(handler),
+    "/user_settings": handler.GetUserSettings.bind(handler),
+    "/user_settings/edit": handler.EditUserSettings.bind(handler),
     "/currency": handler.EditCurrency.bind(handler),
     "/importOpt/edit": handler.EditImportOpt.bind(handler),
     "/expense": handler.AddExpense.bind(handler),

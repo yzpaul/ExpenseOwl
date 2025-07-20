@@ -377,7 +377,7 @@ function populateCategorySelect(selectElement) {
 async function initialize() {
   try {
     // Fetch config
-    const configResponse = await fetch("/categories");
+    const configResponse = await fetch("/user_settings");
     if (!configResponse.ok) throw new Error("Failed to fetch configuration");
     config = await configResponse.json();
     const categorySelect = document.getElementById("category");

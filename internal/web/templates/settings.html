@@ -62,7 +62,12 @@
             <div class="form-container half-width">
                 <h2 align="center">Import Settings</h2>
                 <div class="start-date-manager">
-                    <input type="number" id="startDate" min="1" max="31" placeholder="1">
+                    <div style="display: flex; align-items: center; gap: 0.5em;">
+                        <label for="importOpt_doBlankCategories">
+                            Import data with the "Category" column blank:
+                        </label>
+                        <input type="checkbox" id="importOpt_doBlankCategories">
+                    </div>
                     <button id="saveImportOptBtn" class="nav-button">Save</button>
                 </div>
                 <div id="startDateMessage" class="form-message"></div>
@@ -127,7 +132,7 @@
 
         let categories = [];
         let currentCurrency = "";
-        let currentStartDate = 1;
+        let currentImportOpt = {doBlankCategories:false};
         let draggedItem = null;
 
         // Functions to show message
@@ -277,7 +282,7 @@
                 return;
             }
             try {
-                const response = await fetch('/categories/edit', {
+                const response = await fetch('/user_settings/edit', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -333,23 +338,23 @@
         }
 
         // Start date functions
-        function populateStartDateInput() {
-            const input = document.getElementById("startDate");
-            input.value = currentStartDate;
+        function populateImportOptInput() {
+            console.log({currentImportOpt})
+            document.getElementById("importOpt_doBlankCategories").checked=currentImportOpt.doBlankCategories;
         }
 
         async function saveImportOpt() {
-            const importOpt_doBankCategories = document.getElementById("importOpt_doBankCategories").checked;
+            const doBlankCategories = document.getElementById("importOpt_doBlankCategories").checked;
             try {
-                const body={
-                    importOpt_doBankCategories
+                const importOpt={
+                    doBlankCategories
                 }
                 const response = await fetch('/importOpt/edit', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body
+                    body:JSON.stringify(importOpt)
                 });
                 if (response.ok) {
                     showMessage('startDateMessage', 'Import options saved successfully', true);
@@ -365,14 +370,14 @@
         // Initialize the page
         async function initialize() {
             try {
-                const response = await fetch('/categories');
+                const response = await fetch('/user_settings');
                 if (!response.ok) {
                     throw new Error('Failed to fetch configuration');
                 }
                 const config = await response.json();
                 categories = [...config.categories];
                 currentCurrency = config.currency;
-                currentStartDate = config.startDate;
+                currentImportOpt = config.importOpt;
                 let currentCurrencyCode = "usd"; // Default
                 for (const [code, symbol] of Object.entries(currencySymbols)) {
                     if (symbol === currentCurrency) {
@@ -382,7 +387,7 @@
                 }
                 renderCategories();
                 populateCurrencySelect();
-                populateStartDateInput();
+                populateImportOptInput();
             } catch (error) {
                 console.error('Failed to initialize settings:', error);
                 showMessage('categoriesMessage', 'Failed to load settings', false);

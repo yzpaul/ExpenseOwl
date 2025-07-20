@@ -35,7 +35,7 @@ export class Handler {
   }
 
   // Helpers
-  private writeJSON(res: ServerResponse, status: number, data: unknown) {
+  protected writeJSON(res: ServerResponse, status: number, data: unknown) {
     res.writeHead(status, { "Content-Type": "application/json" });
     res.end(JSON.stringify(data));
   }
@@ -53,22 +53,36 @@ export class Handler {
     ImportJSON.call(this, req, res);
 
 
-  private async parseJSON<T>(req: IncomingMessage): Promise<T> {
-    return new Promise((resolve, reject) => {
-      let body = "";
-      req.on("data", (chunk) => (body += chunk));
-      req.on("end", () => {
-        try {
-          resolve(JSON.parse(body) as T);
-        } catch (err) {
-          reject(err);
+private async parseJSON<T>(req: IncomingMessage): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", () => {
+      try {
+        // If it's already an object (e.g. from internal call), just return it
+        if (typeof body === "object") {
+          resolve(body as T);
+          return;
         }
-      });
-      req.on("error", reject);
-    });
-  }
 
-  GetCategories= async(req: IncomingMessage, res: ServerResponse)=> {
+        // If body is a string but starts with [object Object], fail clearly
+        if (body.startsWith("[object Object]")) {
+          reject(new Error("Body appears to be an object, not JSON stringified. Must use stringified version in fecth library"));
+          return;
+        }
+
+        // Parse string into JSON
+        resolve(JSON.parse(body) as T);
+      } catch (err) {
+        reject(err);
+      }
+    });
+    req.on("error", reject);
+  });
+}
+
+
+  GetUserSettings= async(req: IncomingMessage, res: ServerResponse)=> {
     if (req.method !== "GET") {
       res.statusCode = 405;
       res.end("Method not allowed");
@@ -83,7 +97,7 @@ export class Handler {
     this.writeJSON(res, 200, response);
   }
 
-  EditCategories= async(req: IncomingMessage, res: ServerResponse)=> {
+  EditUserSettings= async(req: IncomingMessage, res: ServerResponse)=> {
     if (req.method !== "PUT") {
       res.statusCode = 405;
       res.end("Method not allowed");
@@ -130,10 +144,10 @@ export class Handler {
       const imp = await this.parseJSON<ImportOpt>(req);
       this.config.UpdateImportOpt(imp);
       this.writeJSON(res, 200, { status: "success" });
-      console.log("HTTP: Updated start date");
-    } catch (err) {
+      console.log("HTTP: Updated import opt");
+    } catch (err:any) {
       this.writeJSON(res, 400, { error: "Invalid request body" });
-      console.log("HTTP ERROR: Failed to decode request body:", err);
+      console.log("HTTP ERROR: Failed to decode request body:", err.message);
     }
   }
 
