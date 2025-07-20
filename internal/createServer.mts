@@ -7,7 +7,10 @@ import { JsonStore } from "./storage.mjs";
 import { Handler } from "./api/handlers.mjs";
 import { ServeTemplate } from "./web/embed.mjs";
 
-export async function createServer(dataPath: string,port=8081) {
+export async function createServer(dataPath: string,port=8081):Promise<[
+  http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
+  number
+]> {
   const cfg = new Config(dataPath);
   cfg.initialize();
   cfg.ServerPort=port.toString()
@@ -16,10 +19,10 @@ export async function createServer(dataPath: string,port=8081) {
   const handler = new Handler(storage, cfg);
 
   const routes: Record<string, (req: IncomingMessage, res: ServerResponse) => Promise<void>> = {
-    "/categories": handler.GetCategories.bind(handler),
-    "/categories/edit": handler.EditCategories.bind(handler),
+    "/user_settings": handler.GetUserSettings.bind(handler),
+    "/user_settings/edit": handler.EditUserSettings.bind(handler),
     "/currency": handler.EditCurrency.bind(handler),
-    "/startdate": handler.EditStartDate.bind(handler),
+    "/importOpt/edit": handler.EditImportOpt.bind(handler),
     "/expense": handler.AddExpense.bind(handler),
     "/expenses": handler.GetExpenses.bind(handler),
     "/expense/edit": handler.EditExpense.bind(handler),
@@ -75,6 +78,5 @@ export async function createServer(dataPath: string,port=8081) {
     }
   });
 
-  //make sure listening before returning
-  return server;
+  return [server,port];
 }

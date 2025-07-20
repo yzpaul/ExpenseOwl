@@ -1,12 +1,12 @@
 // internal/import-export.mts
 import type { IncomingMessage, ServerResponse } from "http";
-import { Readable } from "stream";
 import { parse as parseCSV } from "csv-parse/sync"; // install csv-parse via npm
-import { promisify } from "util";
 // Helper: Parse multipart form to extract file buffer from "file" field
 // This is simplified — for production, consider formidable or busboy.
 import multiparty from "multiparty";
 import { Expense } from "../config.mjs";
+import * as fs from "fs";
+import { Handler } from "./handlers.mjs";
 
 export async function ExportCSV(this: any, req: IncomingMessage, res: ServerResponse) {
   if (req.method !== "GET") {
@@ -65,15 +65,6 @@ export async function ExportJSON(this: any, req: IncomingMessage, res: ServerRes
   }
 }
 
-// Helper: parse multipart form to get uploaded file buffer (simplified)
-async function getFileBuffer(req: IncomingMessage): Promise<Buffer> {
-  const chunks: Buffer[] = [];
-  for await (const chunk of req) {
-    chunks.push(chunk);
-  }
-  return Buffer.concat(chunks);
-}
-
 function parseMultipartForm(req: IncomingMessage): Promise<{ fileBuffer: Buffer }> {
   return new Promise((resolve, reject) => {
     const form = new multiparty.Form();
@@ -81,7 +72,6 @@ function parseMultipartForm(req: IncomingMessage): Promise<{ fileBuffer: Buffer 
       if (err) return reject(err);
       const file = files.file?.[0];
       if (!file) return reject(new Error("File not found in form"));
-      const fs = require("fs");
       fs.readFile(file.path, (err: any, data: Buffer) => {
         if (err) return reject(err);
         resolve({ fileBuffer: data });
@@ -90,7 +80,7 @@ function parseMultipartForm(req: IncomingMessage): Promise<{ fileBuffer: Buffer 
   });
 }
 
-export async function ImportCSV(this: any, req: IncomingMessage, res: ServerResponse) {
+export async function ImportCSV(this: Handler, req: IncomingMessage, res: ServerResponse) {
   if (req.method !== "POST") {
     res.statusCode = 405;
     res.end("Method not allowed");
@@ -100,6 +90,7 @@ export async function ImportCSV(this: any, req: IncomingMessage, res: ServerResp
 
   try {
     const { fileBuffer } = await parseMultipartForm(req);
+    const isBlankCategory=this.config.importOpt.doBlankCategories||false;
     const text = fileBuffer.toString("utf-8");
 
     const records = parseCSV(text, {
@@ -137,21 +128,6 @@ export async function ImportCSV(this: any, req: IncomingMessage, res: ServerResp
     const newCategories: string[] = [];
     const skippedDetails: string[] = [];
 
-    const dateFormats = [
-      "yyyy-MM-dd'T'HH:mm:ss'Z'",
-      "yyyy-MM-dd HH:mm:ss",
-      "yyyy-MM-dd",
-      "MM/dd/yyyy",
-      "MM/dd/yy",
-      "M/d/yyyy",
-      "M/d/yy",
-      "dd/MM/yyyy",
-      "MMM d, yyyy",
-      "d MMM yyyy",
-      "MMMM d, yyyy",
-      "yyyy-MM-dd'T'HH:mm:ss",
-    ];
-
     // Helper to parse date using Date constructor or fallback
     function parseDate(dateStr: string): Date | null {
       let d = new Date(dateStr);
@@ -171,19 +147,24 @@ export async function ImportCSV(this: any, req: IncomingMessage, res: ServerResp
       }
 
       let name = record[nameIdx]?.replace(/[^a-zA-Z0-9_ \.]/g, "").trim() || "-";
-      let rawCategory = record[categoryIdx]?.replace(/[^a-zA-Z0-9_ \.]/g, "").trim();
-      if (!rawCategory) {
-        const msg = `row ${i}: missing category`;
-        console.warn(msg);
-        skippedDetails.push(msg);
-        continue;
-      }
+      let category = "";
 
-      const categoryLower = rawCategory.toLowerCase();
-      let category = categoryMap.get(categoryLower) ?? rawCategory;
-      if (!categoryMap.has(categoryLower)) {
-        categoryMap.set(categoryLower, rawCategory);
-        newCategories.push(rawCategory);
+      if (!isBlankCategory) {
+        let rawCategory = record[categoryIdx]?.replace(/[^a-zA-Z0-9_ \.]/g, "").trim();
+        if (!rawCategory) {
+          const msg = `row ${i}: missing category`;
+          console.warn(msg);
+          skippedDetails.push(msg);
+          continue;
+        }
+
+        const categoryLower = rawCategory.toLowerCase();
+        category = categoryMap.get(categoryLower) ?? rawCategory;
+
+        if (!categoryMap.has(categoryLower)) {
+          categoryMap.set(categoryLower, rawCategory);
+          newCategories.push(rawCategory);
+        }
       }
 
       const amountStr = record[amountIdx]?.trim() || "";
@@ -213,7 +194,7 @@ export async function ImportCSV(this: any, req: IncomingMessage, res: ServerResp
       });
 
       try {
-        await this.storage.SaveExpense(expense);
+        await this.storage.saveExpense(expense);
         imported++;
       } catch (err) {
         const msg = `row ${i}: error saving expense: ${err}`;
@@ -249,7 +230,7 @@ export async function ImportCSV(this: any, req: IncomingMessage, res: ServerResp
   }
 }
 
-export async function ImportJSON(this: any, req: IncomingMessage, res: ServerResponse) {
+export async function ImportJSON(this: Handler, req: IncomingMessage, res: ServerResponse) {
   if (req.method !== "POST") {
     res.statusCode = 405;
     res.end("Method not allowed");
@@ -306,7 +287,7 @@ export async function ImportJSON(this: any, req: IncomingMessage, res: ServerRes
 
       exp.id = "";
       try {
-        await this.storage.SaveExpense(exp);
+        await this.storage.saveExpense(exp);
         imported++;
       } catch (err) {
         console.error(`Error saving expense ${i + 1}: ${err}`);

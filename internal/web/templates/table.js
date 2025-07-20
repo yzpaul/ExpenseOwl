@@ -4,6 +4,7 @@ let allExpenses = [];
 let startDate = 1;
 let currentEditRow = null;
 let config;
+let currentSort = { column: "date", direction: "desc" };
 
 function formatCurrency(amount) {
   let formattedAmount = new Intl.NumberFormat("en-US", {
@@ -62,48 +63,13 @@ function updateMonthDisplay() {
 }
 
 function getMonthBounds(date) {
+  //assume month ALWAYS starts on 1
   const localDate = new Date(date);
-  if (startDate === 1) {
     const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), 1);
     const endLocal = new Date(localDate.getFullYear(), localDate.getMonth() + 1, 0, 23, 59, 59, 999);
     const start = new Date(startLocal.toISOString());
     const end = new Date(endLocal.toISOString());
     return { start, end };
-  }
-  // Handling when startDate != 1 with month boundaries
-  let thisMonthStartDate = startDate;
-  let prevMonthStartDate = startDate;
-  let nextMonthStartDate = startDate;
-
-  const currentMonth = localDate.getMonth();
-  const currentYear = localDate.getFullYear();
-
-  const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  thisMonthStartDate = Math.min(thisMonthStartDate, daysInCurrentMonth);
-
-  const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-  const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-  const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
-  prevMonthStartDate = Math.min(prevMonthStartDate, daysInPrevMonth);
-
-  const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-  const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
-  const daysInNextMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
-  nextMonthStartDate = Math.min(nextMonthStartDate, daysInNextMonth);
-
-  if (localDate.getDate() < thisMonthStartDate) {
-    const startLocal = new Date(prevYear, prevMonth, prevMonthStartDate);
-    const endLocal = new Date(currentYear, currentMonth, thisMonthStartDate - 1, 23, 59, 59, 999);
-    const start = new Date(startLocal.toISOString());
-    const end = new Date(endLocal.toISOString());
-    return { start, end };
-  } else {
-    const startLocal = new Date(currentYear, currentMonth, thisMonthStartDate);
-    const endLocal = new Date(nextYear, nextMonth, nextMonthStartDate - 1, 23, 59, 59, 999);
-    const start = new Date(startLocal.toISOString());
-    const end = new Date(endLocal.toISOString());
-    return { start, end };
-  }
 }
 
 function getMonthExpenses(expenses) {
@@ -115,8 +81,6 @@ function getMonthExpenses(expenses) {
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 }
-
-let currentSort = { column: "date", direction: "desc" };
 
 function sortByColumn(column) {
   const monthExpenses = getMonthExpenses(allExpenses);
@@ -413,7 +377,7 @@ function populateCategorySelect(selectElement) {
 async function initialize() {
   try {
     // Fetch config
-    const configResponse = await fetch("/categories");
+    const configResponse = await fetch("/user_settings");
     if (!configResponse.ok) throw new Error("Failed to fetch configuration");
     config = await configResponse.json();
     const categorySelect = document.getElementById("category");

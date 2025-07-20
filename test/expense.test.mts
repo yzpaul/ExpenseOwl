@@ -6,7 +6,7 @@ import { createServer } from "../internal/createServer.mjs";
 import { IncomingMessage, Server, ServerResponse } from "http";
 
 let server: Server<typeof IncomingMessage, typeof ServerResponse>;
-let port=8002
+let port: number=8002;
 
 beforeAll(async () => {
   // const cfg = new Config("data");
@@ -15,7 +15,7 @@ beforeAll(async () => {
   // );
 
   // Use the createServer util, ensure it returns a `http.Server`
-  server = await createServer("../data/",port);
+  [server,port] = await createServer("data",port);
   await new Promise<void>((resolve) => server.listen(port, resolve));
 
 });

@@ -12,9 +12,9 @@ const dataPath = parseArgs();
 
 (async () => {
   try {
-    const server = await createServer(dataPath);
-    server.listen(8080, () => {
-      console.log("Server listening on http://localhost:8080");
+    const [server,port] = await createServer(dataPath);
+    server.listen(port, () => {
+      console.log(`Server listening on http://localhost:${port}`);
     });
   } catch (err) {
     console.error("Failed to start server:", err);
