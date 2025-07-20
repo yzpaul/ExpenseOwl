@@ -7,7 +7,7 @@ import { JsonStore } from "./storage.mjs";
 import { Handler } from "./api/handlers.mjs";
 import { ServeTemplate } from "./web/embed.mjs";
 
-export async function createServer(dataPath: string,port=8081):Promise<[
+export async function createServer(dataPath: string,port=8080):Promise<[
   http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
   number
 ]> {

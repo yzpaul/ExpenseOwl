@@ -1,6 +1,7 @@
 INPROGRESS 
 * 3.23p: dedup entries on import 
 * 3.23p: add transaction comments 
+* 3.22: fix port issue when launching locker locally- the port in the docker file MUST match the port in the mock-data file. need to pass from one env file
  
  
 TODO 

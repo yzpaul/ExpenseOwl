@@ -3,6 +3,7 @@
 categories=("Food" "Groceries" "Travel" "Rent" "Income" "Utilities" "Entertainment" "Healthcare" "Shopping" "Miscellaneous")
 RENT_AMOUNT=-2000
 CURRENT_YEAR=$(date +%Y)
+PORT=8080
 
 random_amount() {
     min=$1
@@ -17,7 +18,7 @@ for month in {0..11}; do
     date="$CURRENT_YEAR-$(printf "%02d" $((month + 1)))-14T14:00:00Z"
 
     # Add fixed rent expense for each month
-    curl -X PUT http://localhost:8080/expense \
+    curl -X PUT http://localhost:$PORT/expense \
         -H "Content-Type: application/json" \
         -d "{
             \"name\": \"Monthly Rent\",
@@ -29,7 +30,7 @@ for month in {0..11}; do
 
     # Add random income for each month
     amount=$(random_amount 2000 4000)
-    curl -X PUT http://localhost:8080/expense \
+    curl -X PUT http://localhost:$PORT/expense \
         -H "Content-Type: application/json" \
         -d "{
             \"name\": \"Monthly Income\",
@@ -86,7 +87,7 @@ for month in {0..11}; do
         esac
 
         # expense amounts should be negative
-        curl -X PUT http://localhost:8080/expense \
+        curl -X PUT http://localhost:$PORT/expense \
             -H "Content-Type: application/json" \
             -d "{
                 \"name\": \"$name\",
