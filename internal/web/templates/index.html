@@ -373,8 +373,9 @@
         // Get start and end of month
         function getMonthBounds(date) {
             const localDate = new Date(date);
+            console.log({startDate})
             // If startDate is 1, return generic month bounds
-            if (startDate === 1) {
+            if (!startDate||startDate === 1) {
                 const startLocal = new Date(localDate.getFullYear(), localDate.getMonth(), 1);
                 const endLocal = new Date(localDate.getFullYear(), localDate.getMonth() + 1, 0, 23, 59, 59, 999);
                 const start = new Date(startLocal.toISOString());
